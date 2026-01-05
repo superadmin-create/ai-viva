@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { SuccessCheckmark } from "@/components/viva/SuccessCheckmark";
 import { Confetti } from "@/components/viva/Confetti";
 import { Button } from "@/components/ui/button";
-import { Home } from "lucide-react";
+import { Home, RefreshCw } from "lucide-react";
 import { stopAllVapiCalls } from "@/lib/utils/vapi-cleanup";
 
 interface StudentFormData {
@@ -104,12 +104,21 @@ export default function CompletePage() {
           </p>
         </div>
 
-        {/* Return to Home Button */}
-        <div className="pt-8">
+        {/* Action Buttons */}
+        <div className="pt-8 flex flex-col sm:flex-row gap-4 justify-center">
           <Button
             onClick={handleReturnHome}
             size="lg"
-            className="bg-blue-600 hover:bg-blue-700 text-white text-lg px-8 py-6 h-auto"
+            className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white text-lg px-8 py-6 h-auto shadow-lg shadow-green-500/25 hover:shadow-xl hover:shadow-green-500/30 transition-all duration-300"
+          >
+            <RefreshCw className="w-5 h-5 mr-2" />
+            Take Another Test
+          </Button>
+          <Button
+            onClick={handleReturnHome}
+            variant="outline"
+            size="lg"
+            className="border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white text-lg px-8 py-6 h-auto transition-all duration-300"
           >
             <Home className="w-5 h-5 mr-2" />
             Return to Home
