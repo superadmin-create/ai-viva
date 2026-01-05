@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
   fullName: z.string().min(1, "Full name is required"),
@@ -124,10 +125,23 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className={cn(
+      "min-h-screen",
+      "bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50",
+      "dark:from-slate-900 dark:via-slate-800 dark:to-slate-900"
+    )}>
       <div className="container mx-auto px-4 py-8 md:py-16">
         <div className="max-w-2xl mx-auto">
-          <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 rounded-2xl shadow-2xl shadow-slate-900/5 dark:shadow-slate-900/20 p-6 md:p-10 transition-all duration-300 hover:shadow-2xl hover:shadow-slate-900/10 dark:hover:shadow-slate-900/30">
+          <div className={cn(
+            "bg-white/80 dark:bg-slate-800/80",
+            "backdrop-blur-xl",
+            "border border-slate-200/50 dark:border-slate-700/50",
+            "rounded-2xl",
+            "shadow-2xl shadow-slate-900/5 dark:shadow-slate-900/20",
+            "p-6 md:p-10",
+            "transition-all duration-300",
+            "hover:shadow-2xl hover:shadow-slate-900/10 dark:hover:shadow-slate-900/30"
+          )}>
             {/* Logo */}
             <div className="flex justify-center mb-8">
               <div className="relative">

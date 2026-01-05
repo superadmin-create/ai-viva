@@ -225,10 +225,22 @@ export default function VerifyPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className={cn(
+      "min-h-screen",
+      "bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50",
+      "dark:from-slate-900 dark:via-slate-800 dark:to-slate-900"
+    )}>
       <div className="container mx-auto px-4 py-8 md:py-16">
         <div className="max-w-md mx-auto">
-          <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 rounded-2xl shadow-2xl shadow-slate-900/5 dark:shadow-slate-900/20 p-6 md:p-10 transition-all duration-300">
+          <div className={cn(
+            "bg-white/80 dark:bg-slate-800/80",
+            "backdrop-blur-xl",
+            "border border-slate-200/50 dark:border-slate-700/50",
+            "rounded-2xl",
+            "shadow-2xl shadow-slate-900/5 dark:shadow-slate-900/20",
+            "p-6 md:p-10",
+            "transition-all duration-300"
+          )}>
             {/* Back Link */}
             <Link
               href="/"
