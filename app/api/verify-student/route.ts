@@ -5,7 +5,7 @@ import type { EdmingleVerifyStudentResponse } from "@/lib/types/edmingle";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { email, batchId } = body;
+    const { email } = body;
 
     // Validate inputs
     if (!email) {
@@ -27,8 +27,7 @@ export async function POST(request: Request) {
     // Verify student with Edmingle LMS
     try {
       const result: EdmingleVerifyStudentResponse = await verifyStudent(
-        email,
-        batchId
+        email
       );
 
       if (result.verified && result.studentData) {

@@ -16,7 +16,7 @@ interface StudentFormData {
   email: string;
   phone: string;
   subject: string;
-  batchId: string;
+  batchId?: string;
 }
 
 export default function VivaPage() {

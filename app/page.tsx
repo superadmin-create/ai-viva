@@ -39,7 +39,6 @@ const formSchema = z.object({
     .refine((val) => subjects.includes(val as (typeof subjects)[number]), {
       message: "Please select a valid subject",
     }),
-  batchId: z.string().min(1, "Batch/Course ID is required"),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -55,7 +54,6 @@ export default function Home() {
       email: "",
       phone: "",
       subject: undefined,
-      batchId: "",
     },
   });
 
@@ -72,7 +70,6 @@ export default function Home() {
         },
         body: JSON.stringify({
           email: data.email,
-          batchId: data.batchId,
         }),
       });
 
@@ -127,43 +124,50 @@ export default function Home() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 md:py-16">
-      <div className="max-w-2xl mx-auto">
-        <div className="bg-card border rounded-lg shadow-sm p-6 md:p-8">
-          {/* Logo */}
-          <div className="flex justify-center mb-6">
-            <Image
-              src="/logo.png"
-              alt="LeapUp Logo"
-              width={200}
-              height={60}
-              priority
-              className="h-auto"
-            />
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+      <div className="container mx-auto px-4 py-8 md:py-16">
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 rounded-2xl shadow-2xl shadow-slate-900/5 dark:shadow-slate-900/20 p-6 md:p-10 transition-all duration-300 hover:shadow-3xl">
+            {/* Logo */}
+            <div className="flex justify-center mb-8">
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl blur-xl opacity-20 animate-pulse"></div>
+                <Image
+                  src="/logo.png"
+                  alt="LeapUp Logo"
+                  width={200}
+                  height={60}
+                  priority
+                  className="h-auto relative z-10 drop-shadow-lg"
+                />
+              </div>
+            </div>
 
-          <div className="mb-6">
-            <h1 className="text-2xl md:text-3xl font-bold mb-2">
-              Student Registration
-            </h1>
-            <p className="text-muted-foreground">
-              Please fill in your details to continue
-            </p>
-          </div>
+            <div className="mb-8 text-center">
+              <h1 className="text-3xl md:text-4xl font-bold mb-3 bg-gradient-to-r from-slate-900 to-slate-700 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent">
+                Student Registration
+              </h1>
+              <p className="text-slate-600 dark:text-slate-400 text-lg">
+                Please fill in your details to continue
+              </p>
+            </div>
 
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
               <FormField
                 control={form.control}
                 name="fullName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Full Name</FormLabel>
+                    <FormLabel className="text-slate-700 dark:text-slate-300 font-semibold">
+                      Full Name
+                    </FormLabel>
                     <FormControl>
                       <Input
                         placeholder="Enter your full name"
                         {...field}
                         disabled={isLoading}
+                        className="h-12 text-base border-slate-300 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all duration-200"
                       />
                     </FormControl>
                     <FormMessage />
@@ -176,13 +180,16 @@ export default function Home() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel className="text-slate-700 dark:text-slate-300 font-semibold">
+                      Email
+                    </FormLabel>
                     <FormControl>
                       <Input
                         type="email"
                         placeholder="Enter your email"
                         {...field}
                         disabled={isLoading}
+                        className="h-12 text-base border-slate-300 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all duration-200"
                       />
                     </FormControl>
                     <FormMessage />
@@ -195,7 +202,9 @@ export default function Home() {
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Phone</FormLabel>
+                    <FormLabel className="text-slate-700 dark:text-slate-300 font-semibold">
+                      Phone
+                    </FormLabel>
                     <FormControl>
                       <Input
                         type="tel"
@@ -203,6 +212,7 @@ export default function Home() {
                         maxLength={10}
                         {...field}
                         disabled={isLoading}
+                        className="h-12 text-base border-slate-300 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all duration-200"
                       />
                     </FormControl>
                     <FormMessage />
@@ -215,14 +225,16 @@ export default function Home() {
                 name="subject"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Subject</FormLabel>
+                    <FormLabel className="text-slate-700 dark:text-slate-300 font-semibold">
+                      Subject
+                    </FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                       disabled={isLoading}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="h-12 text-base border-slate-300 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all duration-200">
                           <SelectValue placeholder="Select a subject" />
                         </SelectTrigger>
                       </FormControl>
@@ -239,32 +251,28 @@ export default function Home() {
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="batchId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Batch/Course ID</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Enter your batch or course ID"
-                        {...field}
-                        disabled={isLoading}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
               {form.formState.errors.root && (
-                <div className="text-sm font-medium text-destructive">
+                <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm font-medium text-red-600 dark:text-red-400 animate-in fade-in slide-in-from-top-2 duration-300">
                   {form.formState.errors.root.message}
                 </div>
               )}
 
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Submitting..." : "Continue"}
+              <Button 
+                type="submit" 
+                className="w-full h-12 text-base font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg shadow-blue-500/30 dark:shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed" 
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Submitting...
+                  </span>
+                ) : (
+                  "Continue"
+                )}
               </Button>
             </form>
           </Form>
