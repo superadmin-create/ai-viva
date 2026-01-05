@@ -160,5 +160,9 @@
   animation: slide-in-from-top 0.3s ease-out;
 }
 
+.animate-in-slide {
+  animation: slide-in-from-top 0.3s ease-out;
+}
+
 
 

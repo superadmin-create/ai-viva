@@ -292,7 +292,7 @@ export default function VerifyPage() {
 
           {/* Error Message */}
           {error && (
-            <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg animate-in-slide">
               <p className="text-sm text-red-600 dark:text-red-400 text-center font-medium">{error}</p>
             </div>
           )}

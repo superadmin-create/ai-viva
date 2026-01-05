@@ -252,7 +252,7 @@ export default function Home() {
               />
 
               {form.formState.errors.root && (
-                <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm font-medium text-red-600 dark:text-red-400 animate-in fade-in slide-in-from-top-2 duration-300">
+                <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm font-medium text-red-600 dark:text-red-400 animate-in-slide">
                   {form.formState.errors.root.message}
                 </div>
               )}
