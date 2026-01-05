@@ -320,11 +320,34 @@ export const VapiSession = forwardRef<VapiSessionHandle, VapiSessionProps>(
             ? topicsRef.current.join(", ")
             : String(topicsRef.current || "");
 
+          // Fetch teacher-defined questions from Google Sheets
+          let customQuestions = "";
+          try {
+            const questionsResponse = await fetch(
+              `/api/get-questions?subject=${encodeURIComponent(subjectRef.current || "General")}`
+            );
+            const questionsData = await questionsResponse.json();
+            
+            if (questionsData.success && questionsData.questions?.length > 0) {
+              console.log(`[VapiSession] Found ${questionsData.questions.length} custom questions`);
+              customQuestions = questionsData.questions
+                .map((q: { question: string; expectedAnswer: string }, i: number) => 
+                  `Question ${i + 1}: ${q.question}\nExpected Answer: ${q.expectedAnswer}`
+                )
+                .join("\n\n");
+            } else {
+              console.log("[VapiSession] No custom questions found, AI will generate its own");
+            }
+          } catch (err) {
+            console.log("[VapiSession] Could not fetch custom questions:", err);
+          }
+
           const variableValues = {
             studentName: studentNameRef.current || "Student",
             studentEmail: studentEmailRef.current || "",
             subject: subjectRef.current || "General",
             topics: topicsValue || "general topics",
+            customQuestions: customQuestions || "Generate your own questions based on the subject.",
           };
 
           // Metadata is passed through to webhooks (end-of-call-report)
