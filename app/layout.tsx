@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import Image from "next/image";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -20,9 +21,14 @@ export default function RootLayout({
         <header className="border-b">
           <div className="container mx-auto px-4 py-4">
             <div className="flex items-center">
-              <div className="w-10 h-10 bg-gray-200 rounded flex items-center justify-center">
-                <span className="text-gray-500 text-sm font-semibold">LOGO</span>
-              </div>
+              <Image
+                src="/logo.png"
+                alt="LeapUp Logo"
+                width={120}
+                height={36}
+                priority
+                className="h-auto"
+              />
             </div>
           </div>
         </header>

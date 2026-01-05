@@ -23,7 +23,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import Image from "next/image";
 
 const formSchema = z.object({
   fullName: z.string().min(1, "Full name is required"),
@@ -127,23 +126,10 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen">
-      {/* Logo - Top Left Corner */}
-      <div className="absolute top-4 left-4 md:top-6 md:left-6">
-        <Image
-          src="/logo.png"
-          alt="LeapUp Logo"
-          width={150}
-          height={45}
-          priority
-          className="h-auto"
-        />
-      </div>
-
-      <div className="container mx-auto px-4 py-8 md:py-16">
-        <div className="max-w-2xl mx-auto">
-          <div className="bg-card border rounded-lg shadow-sm p-6 md:p-8">
-            <div className="mb-6">
+    <div className="container mx-auto px-4 py-8 md:py-16">
+      <div className="max-w-2xl mx-auto">
+        <div className="bg-card border rounded-lg shadow-sm p-6 md:p-8">
+          <div className="mb-6">
             <h1 className="text-2xl md:text-3xl font-bold mb-2">
               Student Registration
             </h1>
@@ -269,7 +255,6 @@ export default function Home() {
               </Button>
             </form>
           </Form>
-          </div>
         </div>
       </div>
     </div>
