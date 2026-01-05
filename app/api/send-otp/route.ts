@@ -3,7 +3,18 @@ import { Resend } from "resend";
 import { storeOTP, getOTP, clearOTP } from "@/lib/utils/otp-storage";
 import { getOTPEmailHTML, getOTPEmailText } from "@/lib/utils/email-templates";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy initialization to avoid build-time errors when API key is not set
+let resend: Resend | null = null;
+
+function getResendClient(): Resend | null {
+  if (!process.env.RESEND_API_KEY) {
+    return null;
+  }
+  if (!resend) {
+    resend = new Resend(process.env.RESEND_API_KEY);
+  }
+  return resend;
+}
 
 // Generate a 6-digit OTP
 function generateOTP(): string {
@@ -33,7 +44,8 @@ export async function POST(request: Request) {
     }
 
     // Check if RESEND_API_KEY is configured
-    if (!process.env.RESEND_API_KEY) {
+    const resendClient = getResendClient();
+    if (!resendClient) {
       console.error("RESEND_API_KEY is not configured");
       return NextResponse.json(
         { error: "Email service is not configured" },
@@ -69,7 +81,7 @@ export async function POST(request: Request) {
       // Use environment variable for from email, fallback to Resend default
       const fromEmail = process.env.RESEND_FROM_EMAIL || "AI Viva <onboarding@resend.dev>";
 
-      const { data, error } = await resend.emails.send({
+      const { data, error } = await resendClient.emails.send({
         from: fromEmail,
         to: email,
         subject: "Your Viva Verification Code",
