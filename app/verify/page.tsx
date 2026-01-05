@@ -339,6 +339,7 @@ export default function VerifyPage() {
               </button>
             )}
           </div>
+          </div>
         </div>
       </div>
     </div>
