@@ -24,8 +24,8 @@ export default function RootLayout({
               <Image
                 src="/logo.png"
                 alt="LeapUp Logo"
-                width={120}
-                height={36}
+                width={100}
+                height={30}
                 priority
                 className="h-auto"
               />
