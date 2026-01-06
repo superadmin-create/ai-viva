@@ -125,3 +125,4 @@ GOOGLE_SHEET_ID=your-google-sheet-id
 
 These should be the **same credentials** so both apps access the same Google Sheet.
 
+
