@@ -24,6 +24,8 @@ import {
 } from "@/components/ui/select";
 import Image from "next/image";
 
+const STORAGE_KEY = "studentFormDraft";
+
 // Form schema with topic field
 const baseFormSchema = z.object({
   fullName: z.string().min(1, "Full name is required"),
@@ -38,6 +40,20 @@ const baseFormSchema = z.object({
 });
 
 type FormValues = z.infer<typeof baseFormSchema>;
+
+// Load saved form data from localStorage
+function getSavedFormData(): Partial<FormValues> {
+  if (typeof window === "undefined") return {};
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      return JSON.parse(saved);
+    }
+  } catch (e) {
+    console.error("Error loading saved form data:", e);
+  }
+  return {};
+}
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
@@ -101,6 +117,8 @@ export default function Home() {
     fetchTopics();
   }, [selectedSubject]);
 
+  const [isHydrated, setIsHydrated] = useState(false);
+
   const form = useForm<FormValues>({
     resolver: zodResolver(baseFormSchema),
     defaultValues: {
@@ -111,6 +129,35 @@ export default function Home() {
       topic: undefined,
     },
   });
+
+  // Load saved data on mount
+  useEffect(() => {
+    const savedData = getSavedFormData();
+    if (savedData.fullName) form.setValue("fullName", savedData.fullName);
+    if (savedData.email) form.setValue("email", savedData.email);
+    if (savedData.phone) form.setValue("phone", savedData.phone);
+    if (savedData.subject) {
+      form.setValue("subject", savedData.subject);
+      setSelectedSubject(savedData.subject);
+    }
+    if (savedData.topic) form.setValue("topic", savedData.topic);
+    setIsHydrated(true);
+  }, [form]);
+
+  // Save form data to localStorage whenever it changes
+  useEffect(() => {
+    if (!isHydrated) return;
+    
+    const subscription = form.watch((values) => {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(values));
+      } catch (e) {
+        console.error("Error saving form data:", e);
+      }
+    });
+    
+    return () => subscription.unsubscribe();
+  }, [form, isHydrated]);
 
   // Handle subject change
   const handleSubjectChange = (value: string) => {
@@ -296,7 +343,7 @@ export default function Home() {
                     </FormLabel>
                     <Select
                       onValueChange={handleSubjectChange}
-                      defaultValue={field.value}
+                      value={field.value}
                       disabled={isLoading || isLoadingSubjects}
                     >
                       <FormControl>
@@ -329,7 +376,7 @@ export default function Home() {
                       </FormLabel>
                       <Select
                         onValueChange={field.onChange}
-                        defaultValue={field.value}
+                        value={field.value}
                         disabled={isLoading || isLoadingTopics}
                       >
                         <FormControl>
