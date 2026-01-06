@@ -1,4 +1,5 @@
 export const subjects = [
+  "Python",
   "Data Structures",
   "DBMS",
   "Operating Systems",
