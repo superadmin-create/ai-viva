@@ -372,14 +372,8 @@ export const VapiSession = forwardRef<VapiSessionHandle, VapiSessionProps>(
             topics: topicsValue || "general topics",
           };
 
-          // Use assistantOverrides to inject questions into the system prompt
-          const assistantOverrides = {
-            firstMessage: firstMessage,
-            model: {
-              messages: [
-                {
-                  role: "system" as const,
-                  content: `You are an AI Viva Examiner conducting an oral examination.
+          // Build the system prompt with questions
+          const systemPrompt = `You are an AI Viva Examiner conducting an oral examination.
 
 Student Info:
 - Name: ${studentNameRef.current || "Student"}
@@ -396,24 +390,27 @@ CRITICAL RULES:
 
 Speaking Style: Professional but friendly, moderate pace, clear pronunciation.
 
-End by saying: "Thank you for completing this viva. You may now end the session."`
-                }
-              ]
-            }
-          };
+End by saying: "Thank you for completing this viva. You may now end the session."`;
 
           console.log("[VapiSession] Assistant ID:", assistantId);
           console.log("[VapiSession] Custom questions found:", customQuestions ? "YES" : "NO");
           console.log("[VapiSession] Questions count:", customQuestions ? customQuestions.split("Question").length - 1 : 0);
-          console.log("[VapiSession] Starting with assistantOverrides");
           console.log("[VapiSession] First message:", firstMessage);
 
           // Ensure assistantId is a clean string
           const cleanAssistantId = String(assistantId).trim();
 
-          // Start the call with assistant overrides to inject questions
+          // Start the call with overrides - pass firstMessage and model overrides directly
           await vapi.start(cleanAssistantId, { 
-            assistantOverrides,
+            firstMessage: firstMessage,
+            model: {
+              messages: [
+                {
+                  role: "system",
+                  content: systemPrompt
+                }
+              ]
+            },
             metadata 
           });
           console.log("[VapiSession] Call start initiated with custom questions injected");
