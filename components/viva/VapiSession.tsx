@@ -356,13 +356,13 @@ export const VapiSession = forwardRef<VapiSessionHandle, VapiSessionProps>(
             console.log("[VapiSession] Could not fetch custom questions:", err);
           }
 
-          const variableValues = {
-            studentName: studentNameRef.current || "Student",
-            studentEmail: studentEmailRef.current || "",
-            subject: subjectRef.current || "General",
-            topics: topicsValue || "general topics",
-            customQuestions: customQuestions || "Generate your own questions based on the subject.",
-          };
+          // Build the questions section for the prompt
+          const questionsSection = customQuestions 
+            ? `\n\nQUESTIONS TO ASK (USE THESE EXACT QUESTIONS IN ORDER):\n${customQuestions}`
+            : "\n\nGenerate 5 relevant questions based on the subject and topics.";
+
+          // Create a first message that includes context
+          const firstMessage = `Hello ${studentNameRef.current || "Student"}, welcome to your viva examination for ${subjectRef.current || "the subject"}. I'll be asking you questions about ${topicsValue || "the topics"}. Take your time to think before answering. Let's begin with the first question.`;
 
           // Metadata is passed through to webhooks (end-of-call-report)
           const metadata = {
@@ -372,19 +372,51 @@ export const VapiSession = forwardRef<VapiSessionHandle, VapiSessionProps>(
             topics: topicsValue || "general topics",
           };
 
-          console.log("[VapiSession] Assistant ID type:", typeof assistantId);
-          console.log("[VapiSession] Assistant ID value:", assistantId);
-          console.log("[VapiSession] Assistant ID length:", assistantId?.length);
-          console.log("[VapiSession] Starting with variableValues:", variableValues);
-          console.log("[VapiSession] Starting with metadata:", metadata);
+          // Use assistantOverrides to inject questions into the system prompt
+          const assistantOverrides = {
+            firstMessage: firstMessage,
+            model: {
+              messages: [
+                {
+                  role: "system" as const,
+                  content: `You are an AI Viva Examiner conducting an oral examination.
+
+Student Info:
+- Name: ${studentNameRef.current || "Student"}
+- Subject: ${subjectRef.current || "General"}
+- Topics: ${topicsValue || "general topics"}
+${questionsSection}
+
+CRITICAL RULES:
+1. Ask ONLY ONE question at a time from the list above
+2. Wait for the student's complete answer before asking the next question
+3. Do NOT make up your own questions - use the provided questions
+4. Acknowledge answers briefly then move to the next question
+5. After all questions, thank the student and end
+
+Speaking Style: Professional but friendly, moderate pace, clear pronunciation.
+
+End by saying: "Thank you for completing this viva. You may now end the session."`
+                }
+              ]
+            }
+          };
+
+          console.log("[VapiSession] Assistant ID:", assistantId);
+          console.log("[VapiSession] Custom questions found:", customQuestions ? "YES" : "NO");
+          console.log("[VapiSession] Questions count:", customQuestions ? customQuestions.split("Question").length - 1 : 0);
+          console.log("[VapiSession] Starting with assistantOverrides");
+          console.log("[VapiSession] First message:", firstMessage);
 
           // Ensure assistantId is a clean string
           const cleanAssistantId = String(assistantId).trim();
-          console.log("[VapiSession] Clean assistant ID:", cleanAssistantId);
 
-          // Try starting the call - pass both variableValues (for AI prompt) and metadata (for webhook)
-          await vapi.start(cleanAssistantId, { variableValues, metadata });
-          console.log("[VapiSession] Call start initiated");
+          // Start the call with assistant overrides to inject questions
+          await vapi.start(cleanAssistantId, { 
+            assistantOverrides,
+            metadata 
+          });
+          console.log("[VapiSession] Call start initiated with custom questions injected");
 
         } catch (err) {
           console.error("[VapiSession] Init error:", err);
