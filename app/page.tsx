@@ -3,9 +3,8 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { subjects } from "@/lib/config/subjects";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -25,7 +24,8 @@ import {
 } from "@/components/ui/select";
 import Image from "next/image";
 
-const formSchema = z.object({
+// Base schema without subject validation (added dynamically)
+const baseFormSchema = z.object({
   fullName: z.string().min(1, "Full name is required"),
   email: z.string().email("Please enter a valid email address"),
   phone: z
@@ -33,22 +33,45 @@ const formSchema = z.object({
     .min(10, "Phone number must be 10 digits")
     .max(10, "Phone number must be 10 digits")
     .regex(/^\d+$/, "Phone number must contain only digits"),
-  subject: z
-    .string()
-    .min(1, "Please select a subject")
-    .refine((val) => subjects.includes(val as (typeof subjects)[number]), {
-      message: "Please select a valid subject",
-    }),
+  subject: z.string().min(1, "Please select a subject"),
 });
 
-type FormValues = z.infer<typeof formSchema>;
+type FormValues = z.infer<typeof baseFormSchema>;
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
+  const [subjects, setSubjects] = useState<string[]>([]);
+  const [isLoadingSubjects, setIsLoadingSubjects] = useState(true);
   const router = useRouter();
 
+  // Fetch subjects from API on mount
+  useEffect(() => {
+    const fetchSubjects = async () => {
+      try {
+        const response = await fetch("/api/subjects");
+        const data = await response.json();
+        if (data.success && data.subjects) {
+          setSubjects(data.subjects);
+        }
+      } catch (error) {
+        console.error("Failed to fetch subjects:", error);
+        // Fallback to default subjects
+        setSubjects([
+          "Data Structures",
+          "DBMS",
+          "Operating Systems",
+          "Computer Networks",
+        ]);
+      } finally {
+        setIsLoadingSubjects(false);
+      }
+    };
+
+    fetchSubjects();
+  }, []);
+
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(baseFormSchema),
     defaultValues: {
       fullName: "",
       email: "",
@@ -58,6 +81,12 @@ export default function Home() {
   });
 
   const onSubmit = async (data: FormValues) => {
+    // Validate subject against available subjects
+    if (!subjects.includes(data.subject)) {
+      form.setError("subject", { message: "Please select a valid subject" });
+      return;
+    }
+
     setIsLoading(true);
     form.clearErrors("root");
 
@@ -231,11 +260,11 @@ export default function Home() {
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
-                      disabled={isLoading}
+                      disabled={isLoading || isLoadingSubjects}
                     >
                       <FormControl>
                         <SelectTrigger className="h-12 text-base border-slate-300 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all duration-200">
-                          <SelectValue placeholder="Select a subject" />
+                          <SelectValue placeholder={isLoadingSubjects ? "Loading subjects..." : "Select a subject"} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -260,7 +289,7 @@ export default function Home() {
               <Button 
                 type="submit" 
                 className="w-full h-12 text-base font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg shadow-blue-500/30 dark:shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed" 
-                disabled={isLoading}
+                disabled={isLoading || isLoadingSubjects}
               >
                 {isLoading ? (
                   <span className="flex items-center justify-center gap-2">
