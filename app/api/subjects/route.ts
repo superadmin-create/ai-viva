@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { google } from "googleapis";
 
+// Force dynamic rendering - always fetch fresh data
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 const SUBJECTS_SHEET_NAME = "Subjects";
 
 function getSheetsConfig() {
