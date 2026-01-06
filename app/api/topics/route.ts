@@ -5,7 +5,7 @@ import { google } from "googleapis";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-const QUESTIONS_SHEET_NAME = "Viva Questions";
+const TOPICS_SHEET_NAME = "Topics";
 
 function getSheetsConfig() {
   const privateKey = process.env.GOOGLE_PRIVATE_KEY;
@@ -32,7 +32,7 @@ function getAuthClient(config: { privateKey: string; clientEmail: string }) {
   });
 }
 
-// GET - Fetch unique topics for a subject
+// GET - Fetch topics for a subject (teacher-defined)
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -63,10 +63,10 @@ export async function GET(request: NextRequest) {
     try {
       response = await sheets.spreadsheets.values.get({
         spreadsheetId: config.sheetId,
-        range: `'${QUESTIONS_SHEET_NAME}'!A2:G1000`,
+        range: `'${TOPICS_SHEET_NAME}'!A2:C100`,
       });
     } catch (sheetError) {
-      console.log("[Topics API] Viva Questions sheet not found");
+      console.log("[Topics API] Topics sheet not found");
       return NextResponse.json({
         success: true,
         subject,
@@ -77,28 +77,16 @@ export async function GET(request: NextRequest) {
 
     const rows = response.data.values || [];
 
-    // Get unique topics for the subject (column A = subject, column B = topics, column G = active)
-    const topicsSet = new Set<string>();
-    
-    rows
+    // Filter by subject and active status
+    // Column format: Subject, Topic Name, Status
+    const topics = rows
       .filter(
         (row) =>
           row[0]?.toLowerCase() === subject.toLowerCase() &&
-          row[6]?.toUpperCase() === "TRUE" &&
-          row[1] // Has topics
+          row[1] && // Has topic name
+          (row[2] === "active" || !row[2]) // Active or no status
       )
-      .forEach((row) => {
-        // Topics might be comma-separated, split them
-        const topicsStr = row[1] || "";
-        topicsStr.split(",").forEach((topic: string) => {
-          const trimmed = topic.trim();
-          if (trimmed) {
-            topicsSet.add(trimmed);
-          }
-        });
-      });
-
-    const topics = Array.from(topicsSet).sort();
+      .map((row) => row[1]); // Return just the topic names
 
     console.log(`[Topics API] Found ${topics.length} topics for subject: ${subject}`);
 
@@ -116,4 +104,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-
