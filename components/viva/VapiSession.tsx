@@ -323,13 +323,27 @@ export const VapiSession = forwardRef<VapiSessionHandle, VapiSessionProps>(
           // Fetch teacher-defined questions from Google Sheets
           let customQuestions = "";
           try {
+            // Build query params - include topic if specified
+            const queryParams = new URLSearchParams({
+              subject: subjectRef.current || "General",
+            });
+            
+            // Add topic filter if topics array has a value
+            const selectedTopic = Array.isArray(topicsRef.current) && topicsRef.current.length > 0 
+              ? topicsRef.current[0] 
+              : null;
+            if (selectedTopic) {
+              queryParams.append("topic", selectedTopic);
+              console.log(`[VapiSession] Filtering questions by topic: ${selectedTopic}`);
+            }
+            
             const questionsResponse = await fetch(
-              `/api/get-questions?subject=${encodeURIComponent(subjectRef.current || "General")}`
+              `/api/get-questions?${queryParams.toString()}`
             );
             const questionsData = await questionsResponse.json();
             
             if (questionsData.success && questionsData.questions?.length > 0) {
-              console.log(`[VapiSession] Found ${questionsData.questions.length} custom questions`);
+              console.log(`[VapiSession] Found ${questionsData.questions.length} custom questions${selectedTopic ? ` for topic: ${selectedTopic}` : ""}`);
               customQuestions = questionsData.questions
                 .map((q: { question: string; expectedAnswer: string }, i: number) => 
                   `Question ${i + 1}: ${q.question}\nExpected Answer: ${q.expectedAnswer}`

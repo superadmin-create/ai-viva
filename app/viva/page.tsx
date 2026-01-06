@@ -16,6 +16,7 @@ interface StudentFormData {
   email: string;
   phone: string;
   subject: string;
+  topic?: string;
   batchId?: string;
 }
 
@@ -214,6 +215,7 @@ export default function VivaPage() {
             studentEmail={studentData.email}
             studentName={studentData.fullName}
             subject={studentData.subject}
+            topics={studentData.topic && studentData.topic !== "all" ? [studentData.topic] : []}
             onSessionEnd={handleSessionEnd}
             onStatusChange={setCallStatus}
             onCallStart={() => {
@@ -245,6 +247,9 @@ export default function VivaPage() {
           <div className="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
               <h2 className="text-2xl font-semibold">{studentData.subject}</h2>
+              {studentData.topic && studentData.topic !== "all" && (
+                <p className="text-blue-400 text-sm">Topic: {studentData.topic}</p>
+              )}
               <p className="text-gray-400">{studentData.fullName}</p>
             </div>
             <Timer seconds={elapsedTime} />

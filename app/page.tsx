@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/select";
 import Image from "next/image";
 
-// Base schema without subject validation (added dynamically)
+// Form schema with topic field
 const baseFormSchema = z.object({
   fullName: z.string().min(1, "Full name is required"),
   email: z.string().email("Please enter a valid email address"),
@@ -34,6 +34,7 @@ const baseFormSchema = z.object({
     .max(10, "Phone number must be 10 digits")
     .regex(/^\d+$/, "Phone number must contain only digits"),
   subject: z.string().min(1, "Please select a subject"),
+  topic: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof baseFormSchema>;
@@ -41,7 +42,10 @@ type FormValues = z.infer<typeof baseFormSchema>;
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [subjects, setSubjects] = useState<string[]>([]);
+  const [topics, setTopics] = useState<string[]>([]);
   const [isLoadingSubjects, setIsLoadingSubjects] = useState(true);
+  const [isLoadingTopics, setIsLoadingTopics] = useState(false);
+  const [selectedSubject, setSelectedSubject] = useState<string>("");
   const router = useRouter();
 
   // Fetch subjects from API on mount
@@ -55,7 +59,6 @@ export default function Home() {
         }
       } catch (error) {
         console.error("Failed to fetch subjects:", error);
-        // Fallback to default subjects
         setSubjects([
           "Data Structures",
           "DBMS",
@@ -70,6 +73,34 @@ export default function Home() {
     fetchSubjects();
   }, []);
 
+  // Fetch topics when subject changes
+  useEffect(() => {
+    const fetchTopics = async () => {
+      if (!selectedSubject) {
+        setTopics([]);
+        return;
+      }
+
+      setIsLoadingTopics(true);
+      try {
+        const response = await fetch(`/api/topics?subject=${encodeURIComponent(selectedSubject)}`);
+        const data = await response.json();
+        if (data.success && data.topics) {
+          setTopics(data.topics);
+        } else {
+          setTopics([]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch topics:", error);
+        setTopics([]);
+      } finally {
+        setIsLoadingTopics(false);
+      }
+    };
+
+    fetchTopics();
+  }, [selectedSubject]);
+
   const form = useForm<FormValues>({
     resolver: zodResolver(baseFormSchema),
     defaultValues: {
@@ -77,8 +108,16 @@ export default function Home() {
       email: "",
       phone: "",
       subject: undefined,
+      topic: undefined,
     },
   });
+
+  // Handle subject change
+  const handleSubjectChange = (value: string) => {
+    setSelectedSubject(value);
+    form.setValue("subject", value);
+    form.setValue("topic", undefined); // Reset topic when subject changes
+  };
 
   const onSubmit = async (data: FormValues) => {
     // Validate subject against available subjects
@@ -105,7 +144,6 @@ export default function Home() {
       const verifyResult = await verifyResponse.json();
 
       if (!verifyResponse.ok || !verifyResult.verified) {
-        // Student not found in LMS
         const errorMessage =
           verifyResult.error || "Email not registered in our system";
         form.setError("root", {
@@ -115,7 +153,7 @@ export default function Home() {
         return;
       }
 
-      // Step 2: Student verified, store form data in sessionStorage
+      // Step 2: Student verified, store form data in sessionStorage (including topic)
       sessionStorage.setItem("studentFormData", JSON.stringify(data));
 
       // Step 3: Send OTP
@@ -137,7 +175,6 @@ export default function Home() {
     } catch (error) {
       console.error("Error submitting form:", error);
       
-      // Check if it's a student verification error (already handled above)
       if (error instanceof Error && error.message.includes("not registered")) {
         form.setError("root", {
           message: error.message,
@@ -258,7 +295,7 @@ export default function Home() {
                       Subject
                     </FormLabel>
                     <Select
-                      onValueChange={field.onChange}
+                      onValueChange={handleSubjectChange}
                       defaultValue={field.value}
                       disabled={isLoading || isLoadingSubjects}
                     >
@@ -279,6 +316,52 @@ export default function Home() {
                   </FormItem>
                 )}
               />
+
+              {/* Topic dropdown - only show if subject is selected and has topics */}
+              {selectedSubject && (
+                <FormField
+                  control={form.control}
+                  name="topic"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-slate-700 dark:text-slate-300 font-semibold">
+                        Topic <span className="text-slate-400 font-normal">(Optional)</span>
+                      </FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        disabled={isLoading || isLoadingTopics}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="h-12 text-base border-slate-300 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all duration-200">
+                            <SelectValue 
+                              placeholder={
+                                isLoadingTopics 
+                                  ? "Loading topics..." 
+                                  : topics.length === 0 
+                                    ? "No topics available" 
+                                    : "Select a topic (optional)"
+                              } 
+                            />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="all">All Topics</SelectItem>
+                          {topics.map((topic) => (
+                            <SelectItem key={topic} value={topic}>
+                              {topic}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-slate-500 mt-1">
+                        Select a specific topic to focus your viva questions
+                      </p>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
 
               {form.formState.errors.root && (
                 <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm font-medium text-red-600 dark:text-red-400 animate-in-slide">

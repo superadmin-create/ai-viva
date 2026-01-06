@@ -46,6 +46,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const subject = searchParams.get("subject");
+    const topic = searchParams.get("topic"); // Optional topic filter
 
     if (!subject) {
       return NextResponse.json(
@@ -60,6 +61,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         success: true,
         subject,
+        topic,
         questions: [],
         message: "No custom questions found, AI will generate questions",
       });
@@ -80,6 +82,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         success: true,
         subject,
+        topic,
         questions: [],
         message: "No custom questions found, AI will generate questions",
       });
@@ -87,13 +90,20 @@ export async function GET(request: NextRequest) {
 
     const rows = response.data.values || [];
 
-    // Filter by subject and active status
+    // Filter by subject, topic (if provided), and active status
     const questions: VivaQuestion[] = rows
-      .filter(
-        (row) =>
-          row[0]?.toLowerCase() === subject.toLowerCase() &&
-          row[6]?.toUpperCase() === "TRUE"
-      )
+      .filter((row) => {
+        // Must match subject
+        if (row[0]?.toLowerCase() !== subject.toLowerCase()) return false;
+        // Must be active
+        if (row[6]?.toUpperCase() !== "TRUE") return false;
+        // If topic filter provided, must match topic (topics are comma-separated)
+        if (topic) {
+          const rowTopics = (row[1] || "").toLowerCase();
+          if (!rowTopics.includes(topic.toLowerCase())) return false;
+        }
+        return true;
+      })
       .map((row, index) => ({
         id: index + 1,
         question: row[2] || "",
@@ -102,11 +112,12 @@ export async function GET(request: NextRequest) {
         topic: row[1] || "",
       }));
 
-    console.log(`[Get Questions] Found ${questions.length} questions for subject: ${subject}`);
+    console.log(`[Get Questions] Found ${questions.length} questions for subject: ${subject}${topic ? `, topic: ${topic}` : ""}`);
 
     return NextResponse.json({
       success: true,
       subject,
+      topic,
       questions,
       count: questions.length,
     });
