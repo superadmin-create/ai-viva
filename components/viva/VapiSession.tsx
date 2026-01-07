@@ -364,7 +364,17 @@ export const VapiSession = forwardRef<VapiSessionHandle, VapiSessionProps>(
             topics: topicsValue || "general topics",
           };
 
-          // Pass questions via variableValues - Vapi assistant prompt must have {{customQuestions}} placeholder
+          // Build a comprehensive first message that includes the questions
+          // This ensures the AI has the questions even if variableValues doesn't work
+          let firstMessageWithQuestions = `Hello ${studentNameRef.current || "Student"}, welcome to your viva examination for ${subjectRef.current || "the subject"}.`;
+          
+          if (customQuestions) {
+            firstMessageWithQuestions += ` I will be asking you the following questions. Here they are for your reference:\n\n${customQuestions}\n\nLet me start with the first question.`;
+          } else {
+            firstMessageWithQuestions += ` I'll be asking you some questions. Let's begin.`;
+          }
+
+          // Pass questions via variableValues AND in firstMessage as backup
           const variableValues = {
             studentName: studentNameRef.current || "Student",
             studentEmail: studentEmailRef.current || "",
@@ -374,19 +384,24 @@ export const VapiSession = forwardRef<VapiSessionHandle, VapiSessionProps>(
           };
 
           console.log("[VapiSession] Assistant ID:", assistantId);
+          console.log("[VapiSession] Subject:", subjectRef.current);
+          console.log("[VapiSession] Topics:", topicsRef.current);
           console.log("[VapiSession] Custom questions found:", customQuestions ? "YES" : "NO");
           console.log("[VapiSession] Questions count:", customQuestions ? customQuestions.split("Question").length - 1 : 0);
-          console.log("[VapiSession] Variable values:", JSON.stringify(variableValues, null, 2));
+          if (customQuestions) {
+            console.log("[VapiSession] Questions preview:", customQuestions.substring(0, 500) + "...");
+          }
 
           // Ensure assistantId is a clean string
           const cleanAssistantId = String(assistantId).trim();
 
-          // Start the call with variableValues for template substitution
+          // Start the call with variableValues and firstMessage override
           await vapi.start(cleanAssistantId, { 
             variableValues,
+            firstMessage: firstMessageWithQuestions,
             metadata 
           });
-          console.log("[VapiSession] Call start initiated with custom questions in variableValues");
+          console.log("[VapiSession] Call start initiated with custom questions");
 
         } catch (err) {
           console.error("[VapiSession] Init error:", err);
