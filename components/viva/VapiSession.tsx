@@ -344,13 +344,19 @@ export const VapiSession = forwardRef<VapiSessionHandle, VapiSessionProps>(
             
             if (questionsData.success && questionsData.questions?.length > 0) {
               console.log(`[VapiSession] Found ${questionsData.questions.length} custom questions${selectedTopic ? ` for topic: ${selectedTopic}` : ""}`);
+              console.log(`[VapiSession] Questions from API:`, questionsData.questions.map((q: any) => q.question));
+              
+              // Format questions clearly for the AI
               customQuestions = questionsData.questions
                 .map((q: { question: string; expectedAnswer: string }, i: number) => 
                   `Question ${i + 1}: ${q.question}\nExpected Answer: ${q.expectedAnswer}`
                 )
                 .join("\n\n");
+              
+              console.log(`[VapiSession] Formatted questions length: ${customQuestions.length} characters`);
             } else {
               console.log("[VapiSession] No custom questions found, AI will generate its own");
+              console.log("[VapiSession] API response:", questionsData);
             }
           } catch (err) {
             console.log("[VapiSession] Could not fetch custom questions:", err);

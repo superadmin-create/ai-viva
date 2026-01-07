@@ -93,26 +93,36 @@ export async function GET(request: NextRequest) {
     // Filter by subject, topic (if provided), and active status
     const questions: VivaQuestion[] = rows
       .filter((row) => {
-        // Must match subject
-        if (row[0]?.toLowerCase() !== subject.toLowerCase()) return false;
+        // Must match subject (case-insensitive)
+        if (row[0]?.toLowerCase().trim() !== subject.toLowerCase().trim()) return false;
         // Must be active
-        if (row[6]?.toUpperCase() !== "TRUE") return false;
+        if (row[6]?.toUpperCase().trim() !== "TRUE") return false;
         // If topic filter provided, must match topic (topics are comma-separated)
-        if (topic) {
+        if (topic && topic !== "all") {
           const rowTopics = (row[1] || "").toLowerCase();
-          if (!rowTopics.includes(topic.toLowerCase())) return false;
+          const searchTopic = topic.toLowerCase().trim();
+          // Check if any topic in the comma-separated list matches
+          const topicMatches = rowTopics
+            .split(",")
+            .map(t => t.trim())
+            .some(t => t.includes(searchTopic) || searchTopic.includes(t));
+          if (!topicMatches) return false;
         }
         return true;
       })
       .map((row, index) => ({
         id: index + 1,
-        question: row[2] || "",
-        expectedAnswer: row[3] || "",
-        difficulty: row[4] || "medium",
-        topic: row[1] || "",
+        question: row[2] || "", // Column C: Question
+        expectedAnswer: row[3] || "", // Column D: Expected Answer
+        difficulty: row[4] || "medium", // Column E: Difficulty
+        topic: row[1] || "", // Column B: Topics
       }));
 
     console.log(`[Get Questions] Found ${questions.length} questions for subject: ${subject}${topic ? `, topic: ${topic}` : ""}`);
+    
+    if (questions.length > 0) {
+      console.log(`[Get Questions] Sample question: ${questions[0].question.substring(0, 100)}...`);
+    }
 
     return NextResponse.json({
       success: true,
