@@ -104,8 +104,8 @@ export async function GET(request: NextRequest) {
           // Check if any topic in the comma-separated list matches
           const topicMatches = rowTopics
             .split(",")
-            .map(t => t.trim())
-            .some(t => t.includes(searchTopic) || searchTopic.includes(t));
+            .map((t: string) => t.trim())
+            .some((t: string) => t.includes(searchTopic) || searchTopic.includes(t));
           if (!topicMatches) return false;
         }
         return true;
