@@ -120,7 +120,7 @@ async function ensureHeaders(
     // Check if first row has headers
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: sheetId,
-      range: `'${SHEET_NAME}'!A1:J1`,
+      range: `'${SHEET_NAME}'!A1:K1`,
     });
 
     const firstRow = response.data.values?.[0];
@@ -138,6 +138,7 @@ async function ensureHeaders(
         "Overall Feedback",
         "Transcript",
         "Recording",
+        "Evaluation (JSON)",
       ];
 
       await sheets.spreadsheets.values.update({
@@ -200,6 +201,9 @@ export async function saveToSheets(
       ? row.transcript.substring(0, 49000)
       : "-";
 
+    // Format evaluation JSON for storage
+    const evaluationJson = row.evaluation || (evaluation ? JSON.stringify(evaluation) : "");
+
     const rowValues = [
       formatTimestamp(row.timestamp),
       row.studentName || "Unknown",
@@ -211,6 +215,7 @@ export async function saveToSheets(
       evaluation?.overallFeedback || "No feedback available",
       truncatedTranscript,
       row.recordingUrl || "-",
+      evaluationJson, // Column K: Evaluation JSON
     ];
 
     console.log("[Sheets] Appending row to sheet:", {
@@ -223,7 +228,7 @@ export async function saveToSheets(
     // Append the row to the sheet
     const response = await sheets.spreadsheets.values.append({
       spreadsheetId: config.sheetId,
-      range: `'${SHEET_NAME}'!A:J`,
+      range: `'${SHEET_NAME}'!A:K`,
       valueInputOption: "RAW",
       insertDataOption: "INSERT_ROWS",
       requestBody: {

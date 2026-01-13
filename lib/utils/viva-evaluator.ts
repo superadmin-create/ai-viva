@@ -47,18 +47,34 @@ async function evaluateWithAI(
     )
     .join("\n\n");
 
-  const prompt = `You are an expert examiner evaluating a student's viva voce (oral examination) in ${subject}.
+  const prompt = `You are a strict and thorough examiner evaluating a student's viva voce (oral examination) in ${subject}. Be critical and demanding - only award full marks for truly excellent answers.
 
 Evaluate each of the following question-answer pairs. For each answer:
-1. Assign a score from 0 to ${maxMarksPerQuestion} marks based on:
-   - 0: No answer or completely incorrect
-   - 1: Partial understanding, significant gaps
-   - 2: Good understanding with minor gaps
-   - 3: Excellent, comprehensive answer
+1. Assign a score from 0 to ${maxMarksPerQuestion} marks based on STRICT criteria:
+   - 0: No answer, completely incorrect, or shows no understanding of the concept
+   - 1: Shows minimal understanding with major gaps, incorrect key concepts, or vague/irrelevant answers
+   - 2: Demonstrates basic understanding but missing important details, examples, or connections. Answer is partially correct but incomplete
+   - 3: Excellent answer - comprehensive, accurate, well-structured, includes relevant examples, demonstrates deep understanding, and connects concepts appropriately. ONLY award 3 marks if the answer is truly exceptional and complete.
+   
+   IMPORTANT: Be strict. A good answer that lacks depth or examples should get 2 marks, not 3. Only award 3 marks for answers that are truly comprehensive and demonstrate mastery.
 
-2. Provide specific, constructive feedback
-3. List 1-2 specific strengths (if any)
-4. List 1-2 specific areas for improvement (if any)
+2. Provide detailed, specific, and constructive feedback (2-4 sentences) that:
+   - Explains what the student did well or where they went wrong
+   - Points out specific concepts they understood or missed
+   - Suggests how they could improve their answer
+   - References specific parts of their answer when relevant
+
+3. List 2-3 specific strengths (if any) - be specific about what they demonstrated correctly
+
+4. List 2-3 specific areas for improvement (if any) - provide actionable suggestions
+
+For the overall feedback, provide a comprehensive summary (4-6 sentences) that:
+- Summarizes the student's overall performance across all questions
+- Highlights key strengths demonstrated throughout the examination
+- Identifies common areas that need improvement
+- Provides specific, actionable recommendations for future study
+- Mentions which topics or concepts they should focus on
+- Encourages them while being honest about areas needing work
 
 Questions and Answers:
 ${qaPairsText}
@@ -70,20 +86,20 @@ Respond in this exact JSON format:
       "questionNumber": 1,
       "marks": <0-3>,
       "maxMarks": ${maxMarksPerQuestion},
-      "feedback": "<specific feedback for this answer>",
-      "strengths": ["<strength 1>", "<strength 2>"],
-      "weaknesses": ["<weakness 1>", "<weakness 2>"]
+      "feedback": "<detailed 2-4 sentence feedback explaining what was good/bad and how to improve>",
+      "strengths": ["<specific strength 1>", "<specific strength 2>", "<specific strength 3>"],
+      "weaknesses": ["<specific weakness 1>", "<specific weakness 2>", "<specific weakness 3>"]
     }
   ],
-  "overallFeedback": "<overall summary of the student's performance with specific recommendations>"
+  "overallFeedback": "<comprehensive 4-6 sentence summary with specific recommendations and encouragement>"
 }
 
-Be fair but honest. Focus on helping the student improve. Only return valid JSON.`;
+Be fair but honest. Focus on helping the student improve with actionable, specific feedback. Only return valid JSON.`;
 
   try {
     const response = await anthropic.messages.create({
       model: "claude-3-haiku-20240307", // Use Haiku for speed and cost efficiency
-      max_tokens: 2000,
+      max_tokens: 4000, // Increased for more detailed feedback
       messages: [
         {
           role: "user",
@@ -124,20 +140,31 @@ function fallbackEvaluation(
     const answerLength = qa.answer?.length || 0;
     let score = 0;
 
+    // Stricter scoring criteria
     if (answerLength === 0) {
       score = 0;
-    } else if (answerLength < 50) {
+    } else if (answerLength < 80) {
+      // Increased threshold - need more content for partial credit
       score = 1;
-    } else if (answerLength < 150) {
+    } else if (answerLength < 200) {
+      // Increased threshold - need substantial content for good score
       score = 2;
     } else {
+      // Only award 3 for very detailed, comprehensive answers
       score = 3;
     }
 
-    // Penalize for uncertainty phrases
+    // Stricter penalties for uncertainty phrases
     const lowerAnswer = (qa.answer || "").toLowerCase();
-    if (lowerAnswer.includes("don't know") || lowerAnswer.includes("not sure")) {
+    if (lowerAnswer.includes("don't know") || lowerAnswer.includes("not sure") || 
+        lowerAnswer.includes("i think") || lowerAnswer.includes("maybe") ||
+        lowerAnswer.includes("i'm not certain")) {
       score = Math.min(score, 1);
+    }
+    
+    // Additional penalty for very short answers even if they exist
+    if (answerLength > 0 && answerLength < 30) {
+      score = Math.min(score, 0);
     }
 
     return {
@@ -177,13 +204,13 @@ function getFallbackFeedback(score: number): string {
 
 function getFallbackOverallFeedback(percentage: number, questionCount: number): string {
   if (percentage >= 80) {
-    return `Excellent performance! You answered ${questionCount} questions with strong understanding.`;
+    return `Excellent performance! You answered ${questionCount} questions with strong understanding and demonstrated a comprehensive grasp of the subject matter. Your answers showed depth, clarity, and good conceptual understanding. Continue building on these strengths and consider exploring more advanced topics to further enhance your knowledge.`;
   } else if (percentage >= 60) {
-    return `Good performance! You demonstrated understanding but could benefit from more detailed explanations.`;
+    return `Good performance! You demonstrated solid understanding of the core concepts and answered ${questionCount} questions. Your responses showed that you have a foundation in the subject, but there's room to provide more detailed explanations and examples. Focus on elaborating your answers with specific examples, real-world applications, and connecting related concepts to strengthen your understanding further.`;
   } else if (percentage >= 40) {
-    return `Fair performance. Review the topics and focus on providing more comprehensive answers.`;
+    return `Fair performance. You answered ${questionCount} questions, showing some understanding of the subject matter. However, your answers need more depth and detail. Review the fundamental concepts thoroughly, practice explaining topics in your own words, and work on providing more comprehensive answers that demonstrate your understanding. Consider studying the material more systematically and practicing with sample questions.`;
   } else {
-    return `Needs improvement. Please review the subject material and practice answering more thoroughly.`;
+    return `Your performance indicates that you need to review the subject material more thoroughly. You answered ${questionCount} questions, but the responses lacked sufficient detail and understanding. Focus on: (1) Reviewing the core concepts and fundamentals, (2) Understanding the relationships between different topics, (3) Practicing explaining concepts clearly, and (4) Seeking clarification on areas where you're uncertain. With dedicated study and practice, you can significantly improve your performance.`;
   }
 }
 
