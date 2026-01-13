@@ -219,11 +219,11 @@ export async function saveToSheets(
       row.studentEmail || "unknown@example.com",
       row.subject || "Unknown Subject",
       row.topics || "-",
-      questionsText,
-      formatScoreOutOf100(row.percentage),
-      evaluation?.overallFeedback || "No feedback available",
-      truncatedTranscript,
-      row.recordingUrl || "-",
+      questionsText, // Column F: Questions Answered
+      formatScoreOutOf100(row.percentage), // Column G: Score
+      evaluation?.overallFeedback || "No feedback available", // Column H: Overall Feedback
+      truncatedTranscript, // Column I: Transcript
+      row.recordingUrl || "-", // Column J: Recording
       evaluationJson, // Column K: Evaluation JSON
     ];
 

@@ -270,17 +270,34 @@ export async function POST(request: Request) {
 
     // Save to Google Sheets
     console.log("[Viva Complete] Saving to Google Sheets...");
+    console.log("[Viva Complete] Sheet row data:", {
+      studentEmail: sheetRow.studentEmail,
+      studentName: sheetRow.studentName,
+      subject: sheetRow.subject,
+      topics: sheetRow.topics,
+      score: sheetRow.percentage,
+      hasEvaluation: !!sheetRow.evaluation,
+      evaluationLength: sheetRow.evaluation?.length || 0,
+    });
+    
     const sheetsResult = await saveToSheets(sheetRow);
     
     if (!sheetsResult.success) {
       console.error(
-        "[Viva Complete] Failed to save to sheets:",
+        "[Viva Complete] CRITICAL: Failed to save to sheets:",
         sheetsResult.error
       );
+      console.error("[Viva Complete] This means the results will NOT appear in Google Sheets!");
+      console.error("[Viva Complete] Please check:");
+      console.error("  1. GOOGLE_PRIVATE_KEY is set correctly");
+      console.error("  2. GOOGLE_CLIENT_EMAIL is set correctly");
+      console.error("  3. GOOGLE_SHEET_ID is set correctly");
+      console.error("  4. Service account has write access to the sheet");
       // Don't fail the webhook - log error but return success
       // Sheets save can be retried later if needed
     } else {
-      console.log("[Viva Complete] Successfully saved to Google Sheets");
+      console.log("[Viva Complete] ✓ Successfully saved to Google Sheets");
+      console.log("[Viva Complete] Results should now be visible in the 'Viva Results' sheet");
     }
 
     // Log completion

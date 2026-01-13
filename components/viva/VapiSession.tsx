@@ -343,20 +343,30 @@ export const VapiSession = forwardRef<VapiSessionHandle, VapiSessionProps>(
             const questionsData = await questionsResponse.json();
             
             if (questionsData.success && questionsData.questions?.length > 0) {
-              console.log(`[VapiSession] Found ${questionsData.questions.length} custom questions${selectedTopic ? ` for topic: ${selectedTopic}` : ""}`);
+              console.log(`[VapiSession] ✓ Found ${questionsData.questions.length} custom questions${selectedTopic ? ` for topic: ${selectedTopic}` : ""}`);
               console.log(`[VapiSession] Questions from API:`, questionsData.questions.map((q: any) => q.question));
               
               // Format questions clearly for the AI
+              // Use a clear format that the AI can easily parse and ask
               customQuestions = questionsData.questions
                 .map((q: { question: string; expectedAnswer: string }, i: number) => 
                   `Question ${i + 1}: ${q.question}\nExpected Answer: ${q.expectedAnswer}`
                 )
                 .join("\n\n");
               
+              // Add instructions for the AI
+              customQuestions = `You must ask these questions in order:\n\n${customQuestions}\n\nIMPORTANT: Ask these questions ONE AT A TIME. Wait for the student's complete answer before asking the next question.`;
+              
               console.log(`[VapiSession] Formatted questions length: ${customQuestions.length} characters`);
+              console.log(`[VapiSession] Questions preview:`, customQuestions.substring(0, 300) + "...");
             } else {
-              console.log("[VapiSession] No custom questions found, AI will generate its own");
-              console.log("[VapiSession] API response:", questionsData);
+              console.warn("[VapiSession] ⚠ No custom questions found, AI will generate its own");
+              console.warn("[VapiSession] API response:", JSON.stringify(questionsData, null, 2));
+              console.warn("[VapiSession] To use custom questions:");
+              console.warn("  1. Generate questions in Admin Panel");
+              console.warn("  2. Save them to Google Sheets 'Viva Questions' sheet");
+              console.warn("  3. Ensure subject name matches exactly");
+              console.warn("  4. Set 'Active' column to TRUE");
             }
           } catch (err) {
             console.log("[VapiSession] Could not fetch custom questions:", err);
@@ -370,12 +380,14 @@ export const VapiSession = forwardRef<VapiSessionHandle, VapiSessionProps>(
             topics: topicsValue || "general topics",
           };
 
-          // Build a comprehensive first message that includes the questions
-          // This ensures the AI has the questions even if variableValues doesn't work
+          // Build a comprehensive first message
+          // Note: We pass questions via variableValues primarily, firstMessage is just a greeting
           let firstMessageWithQuestions = `Hello ${studentNameRef.current || "Student"}, welcome to your viva examination for ${subjectRef.current || "the subject"}.`;
           
           if (customQuestions) {
-            firstMessageWithQuestions += ` I will be asking you the following questions. Here they are for your reference:\n\n${customQuestions}\n\nLet me start with the first question.`;
+            // Don't include all questions in firstMessage - let the assistant use variableValues
+            // Just give a brief greeting and instruction
+            firstMessageWithQuestions += ` I will be asking you some questions based on ${topicsValue || "the topics you selected"}. Please answer each question to the best of your ability. Let's begin with the first question.`;
           } else {
             firstMessageWithQuestions += ` I'll be asking you some questions. Let's begin.`;
           }
