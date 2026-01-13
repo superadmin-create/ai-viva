@@ -129,42 +129,114 @@ export async function POST(request: Request) {
       console.warn("[Viva Complete] No student email in metadata");
     }
 
-    // Extract transcript - can be in different places depending on Vapi version
-    let transcript = 
-      call.transcript || 
-      artifact?.transcript ||
-      body.message?.transcript ||
-      "";
+    // Extract transcript - prioritize most accurate sources
+    // Vapi provides transcripts in multiple formats, we want the most complete one
+    let transcript = "";
     
-    // If transcript is an array of messages, convert to string
-    // Filter out "system" messages which contain the AI instructions
+    // Priority order for transcript sources (most accurate first):
+    // 1. Artifact messages (most detailed, includes all turns)
+    // 2. Call transcript (official transcript)
+    // 3. Message transcript (fallback)
+    
     if (artifact?.messages && Array.isArray(artifact.messages)) {
-      transcript = artifact.messages
-        .filter((msg: any) => msg.role !== "system") // Exclude system prompts
-        .map((msg: any) => {
-          const role = msg.role === "bot" || msg.role === "assistant" ? "AI" : "Student";
-          return `${role}: ${msg.content || msg.message || ""}`;
+      // Build transcript from messages array - this is usually the most accurate
+      const messageLines = artifact.messages
+        .filter((msg: any) => {
+          // Exclude system messages and empty messages
+          const role = msg.role || "";
+          const content = msg.content || msg.message || msg.text || "";
+          return role !== "system" && content.trim().length > 0;
         })
-        .join("\n");
+        .map((msg: any) => {
+          const role = msg.role || "";
+          const content = msg.content || msg.message || msg.text || "";
+          
+          // Normalize role names
+          let roleLabel = "Student";
+          if (role === "bot" || role === "assistant" || role === "ai") {
+            roleLabel = "AI";
+          } else if (role === "user" || role === "student" || role === "candidate") {
+            roleLabel = "Student";
+          }
+          
+          // Clean content and ensure it's not empty
+          const cleanedContent = (content || "").trim();
+          if (cleanedContent.length === 0) return null;
+          
+          return `${roleLabel}: ${cleanedContent}`;
+        })
+        .filter((line: string | null) => line !== null);
+      
+      transcript = messageLines.join("\n");
       console.log("[Viva Complete] Built transcript from messages array (excluding system messages)");
+      console.log(`[Viva Complete] Processed ${artifact.messages.length} messages into ${messageLines.length} transcript lines`);
+    } else {
+      // Fallback to other transcript sources
+      transcript = 
+        call.transcript || 
+        artifact?.transcript ||
+        body.message?.transcript ||
+        "";
     }
 
+    // Log transcript details for debugging
     console.log("[Viva Complete] Transcript length:", transcript.length);
-    console.log("[Viva Complete] Transcript preview:", transcript.substring(0, 200));
+    console.log("[Viva Complete] Transcript preview:", transcript.substring(0, 500));
+    console.log("[Viva Complete] Transcript line count:", transcript.split("\n").length);
     
     if (!transcript || transcript.trim().length === 0) {
       console.warn("[Viva Complete] No transcript found in call data");
+      console.warn("[Viva Complete] Available data:", {
+        hasCall: !!call,
+        hasArtifact: !!artifact,
+        callKeys: call ? Object.keys(call) : [],
+        artifactKeys: artifact ? Object.keys(artifact) : [],
+      });
+    } else {
+      // Validate transcript has both AI and Student messages
+      const hasAI = /^(?:AI|bot|assistant|examiner):/im.test(transcript);
+      const hasStudent = /^(?:Student|user|candidate):/im.test(transcript);
+      console.log(`[Viva Complete] Transcript validation: Has AI messages: ${hasAI}, Has Student messages: ${hasStudent}`);
+      
+      if (!hasAI || !hasStudent) {
+        console.warn("[Viva Complete] Transcript may be incomplete - missing AI or Student messages");
+      }
     }
 
     // Parse transcript into Q&A pairs
-    console.log("[Viva Complete] Parsing transcript...");
+    console.log("[Viva Complete] Parsing transcript into Q&A pairs...");
     const parsedTranscript = parseTranscript(transcript);
     console.log(
-      `[Viva Complete] Found ${parsedTranscript.questions.length} Q&A pairs`
+      `[Viva Complete] Found ${parsedTranscript.questions.length} Q&A pairs from transcript`
     );
+    
+    // Log each Q&A pair for verification
+    if (parsedTranscript.questions.length > 0) {
+      parsedTranscript.questions.forEach((qa, idx) => {
+        console.log(`[Viva Complete] Q${idx + 1}: "${qa.question.substring(0, 100)}..."`);
+        console.log(`[Viva Complete] A${idx + 1}: "${qa.answer.substring(0, 100)}..."`);
+      });
+    } else {
+      console.warn("[Viva Complete] WARNING: No Q&A pairs extracted from transcript!");
+      console.warn("[Viva Complete] This means evaluation cannot proceed accurately.");
+      console.warn("[Viva Complete] Transcript content:", transcript.substring(0, 1000));
+    }
 
-    // Evaluate viva
-    console.log("[Viva Complete] Evaluating viva...");
+    // Evaluate viva based ONLY on transcript Q&A pairs
+    // This ensures evaluation is based on what was actually transcribed, not audio
+    console.log("[Viva Complete] Evaluating viva based on transcript Q&A pairs...");
+    if (parsedTranscript.questions.length === 0) {
+      console.error("[Viva Complete] Cannot evaluate - no Q&A pairs found in transcript");
+      return NextResponse.json(
+        {
+          success: false,
+          error: "No Q&A pairs found in transcript. Cannot evaluate.",
+          transcriptLength: transcript.length,
+        },
+        { status: 400 }
+      );
+    }
+    
     const evaluation = await evaluateViva(
       parsedTranscript.questions,
       subject

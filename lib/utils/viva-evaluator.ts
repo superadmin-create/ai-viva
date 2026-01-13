@@ -49,6 +49,8 @@ async function evaluateWithAI(
 
   const prompt = `You are a strict and thorough examiner evaluating a student's viva voce (oral examination) in ${subject}. Be critical and demanding - only award full marks for truly excellent answers.
 
+CRITICAL: You are evaluating based on the TRANSCRIBED TEXT of the student's answers, not audio quality or vocal delivery. Focus on the CONTENT and MEANING of what the student said, as transcribed. Do not penalize for transcription errors, filler words, or speech disfluencies. Evaluate the actual knowledge and understanding demonstrated in the transcribed text.
+
 Evaluate each of the following question-answer pairs. For each answer:
 1. Assign a score from 0 to ${maxMarksPerQuestion} marks based on STRICT criteria:
    - 0: No answer, completely incorrect, or shows no understanding of the concept
@@ -57,26 +59,28 @@ Evaluate each of the following question-answer pairs. For each answer:
    - 3: Excellent answer - comprehensive, accurate, well-structured, includes relevant examples, demonstrates deep understanding, and connects concepts appropriately. ONLY award 3 marks if the answer is truly exceptional and complete.
    
    IMPORTANT: Be strict. A good answer that lacks depth or examples should get 2 marks, not 3. Only award 3 marks for answers that are truly comprehensive and demonstrate mastery.
+   IMPORTANT: Evaluate based on the TRANSCRIBED CONTENT. If the transcript shows the student understood the concept but had some filler words or minor transcription issues, focus on the actual knowledge demonstrated.
 
 2. Provide detailed, specific, and constructive feedback (2-4 sentences) that:
-   - Explains what the student did well or where they went wrong
-   - Points out specific concepts they understood or missed
+   - Explains what the student did well or where they went wrong based on the TRANSCRIBED TEXT
+   - Points out specific concepts they understood or missed (as shown in the transcript)
    - Suggests how they could improve their answer
-   - References specific parts of their answer when relevant
+   - References specific parts of their transcribed answer when relevant
+   - Note: Base feedback on what was actually said (as transcribed), not assumptions
 
-3. List 2-3 specific strengths (if any) - be specific about what they demonstrated correctly
+3. List 2-3 specific strengths (if any) - be specific about what they demonstrated correctly in their transcribed answers
 
-4. List 2-3 specific areas for improvement (if any) - provide actionable suggestions
+4. List 2-3 specific areas for improvement (if any) - provide actionable suggestions based on what was missing or incorrect in the transcribed answers
 
 For the overall feedback, provide a comprehensive summary (4-6 sentences) that:
-- Summarizes the student's overall performance across all questions
-- Highlights key strengths demonstrated throughout the examination
-- Identifies common areas that need improvement
+- Summarizes the student's overall performance across all questions (based on transcribed answers)
+- Highlights key strengths demonstrated throughout the examination (as shown in transcript)
+- Identifies common areas that need improvement (based on transcript analysis)
 - Provides specific, actionable recommendations for future study
 - Mentions which topics or concepts they should focus on
 - Encourages them while being honest about areas needing work
 
-Questions and Answers:
+Questions and Answers (from transcript):
 ${qaPairsText}
 
 Respond in this exact JSON format:
@@ -216,6 +220,10 @@ function getFallbackOverallFeedback(percentage: number, questionCount: number): 
 
 /**
  * Main evaluation function - uses AI when available, falls back to heuristics
+ * 
+ * IMPORTANT: This function evaluates based ONLY on the transcribed text from the viva session.
+ * It does NOT use audio quality, vocal delivery, or any non-transcript data.
+ * The qaPairs parameter contains question-answer pairs extracted from the transcript.
  */
 export async function evaluateViva(
   qaPairs: QuestionAnswerPair[],
@@ -228,9 +236,16 @@ export async function evaluateViva(
       totalMarks: 0,
       maxTotalMarks: 0,
       percentage: 0,
-      overallFeedback: "No questions answered.",
+      overallFeedback: "No questions answered in transcript.",
     };
   }
+
+  // Log that we're evaluating based on transcript
+  console.log(`[Evaluator] Evaluating ${qaPairs.length} Q&A pairs from transcript for subject: ${subject || "General"}`);
+  qaPairs.forEach((qa, idx) => {
+    console.log(`[Evaluator] Q${idx + 1} (from transcript): "${qa.question.substring(0, 80)}..."`);
+    console.log(`[Evaluator] A${idx + 1} (from transcript): "${qa.answer.substring(0, 80)}..."`);
+  });
 
   const maxMarksPerQuestion = 3;
   let aiResult: AIOverallResult;
