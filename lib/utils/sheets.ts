@@ -143,7 +143,7 @@ async function ensureHeaders(
 
       await sheets.spreadsheets.values.update({
         spreadsheetId: sheetId,
-        range: `'${SHEET_NAME}'!A1:J1`,
+        range: `'${SHEET_NAME}'!A1:K1`,
         valueInputOption: "RAW",
         requestBody: {
           values: [headers],
@@ -202,7 +202,16 @@ export async function saveToSheets(
       : "-";
 
     // Format evaluation JSON for storage
-    const evaluationJson = row.evaluation || (evaluation ? JSON.stringify(evaluation) : "");
+    // Ensure evaluation is properly stringified if it's an object
+    let evaluationJson = "";
+    if (row.evaluation) {
+      // If it's already a string, use it; otherwise stringify
+      evaluationJson = typeof row.evaluation === 'string' 
+        ? row.evaluation 
+        : JSON.stringify(row.evaluation);
+    } else if (evaluation) {
+      evaluationJson = JSON.stringify(evaluation);
+    }
 
     const rowValues = [
       formatTimestamp(row.timestamp),
@@ -218,11 +227,18 @@ export async function saveToSheets(
       evaluationJson, // Column K: Evaluation JSON
     ];
 
+    // Verify row has correct number of columns (should be 11: A through K)
+    if (rowValues.length !== 11) {
+      console.error(`[Sheets] ERROR: Row has ${rowValues.length} columns, expected 11. This may cause data misalignment.`);
+    }
+
     console.log("[Sheets] Appending row to sheet:", {
       sheetId: config.sheetId,
       studentEmail: row.studentEmail,
       subject: row.subject,
       score: rowValues[6],
+      hasEvaluation: !!evaluationJson,
+      evaluationLength: evaluationJson?.length || 0,
     });
 
     // Append the row to the sheet
