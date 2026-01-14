@@ -349,8 +349,17 @@ export async function saveToSheets(
       console.warn("[Sheets] Warning: Subject is missing or default");
     }
 
+    // Log the actual row values being sent (first 200 chars of each field)
+    console.log("[Sheets] Row values to append:", rowValues.map((val, idx) => {
+      const str = String(val || "");
+      return `[${idx}]: ${str.substring(0, 200)}${str.length > 200 ? "..." : ""}`;
+    }));
+
     // Append the row to the sheet
     console.log("[Sheets] Calling Google Sheets API append...");
+    console.log("[Sheets] Range:", `'${SHEET_NAME}'!A:K`);
+    console.log("[Sheets] Sheet ID:", config.sheetId);
+    
     const response = await sheets.spreadsheets.values.append({
       spreadsheetId: config.sheetId,
       range: `'${SHEET_NAME}'!A:K`,
@@ -359,6 +368,13 @@ export async function saveToSheets(
       requestBody: {
         values: [rowValues],
       },
+    });
+    
+    console.log("[Sheets] API Response received:", {
+      hasUpdates: !!response.data.updates,
+      updatedRange: response.data.updates?.updatedRange,
+      updatedRows: response.data.updates?.updatedRows,
+      updatedCells: response.data.updates?.updatedCells,
     });
 
     // Verify the response
