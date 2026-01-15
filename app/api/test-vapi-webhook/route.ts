@@ -18,6 +18,7 @@ export async function POST(request: Request) {
     const body = await request.json().catch(() => ({}));
     
     // Use provided data or defaults
+    const callId = body.callId || `test-call-${Date.now()}`;
     const studentEmail = body.email || "test@example.com";
     const studentName = body.name || "Test Student";
     const subject = body.subject || "Data Structures";
@@ -49,8 +50,22 @@ AI: Very good. That concludes our examination. Thank you for your time.`;
 
     // Parse transcript into Q&A pairs
     console.log("[Test Webhook] Parsing transcript...");
+    console.log("[Test Webhook] Transcript length:", testTranscript.length);
+    console.log("[Test Webhook] Transcript preview (first 500 chars):", testTranscript.substring(0, 500));
+    console.log("[Test Webhook] Transcript lines:", testTranscript.split("\n").length);
+    console.log("[Test Webhook] Has AI prefix:", /^AI:/m.test(testTranscript));
+    console.log("[Test Webhook] Has Student prefix:", /^Student:/m.test(testTranscript));
     const parsedTranscript = parseTranscript(testTranscript);
     console.log(`[Test Webhook] Found ${parsedTranscript.questions.length} Q&A pairs`);
+    if (parsedTranscript.questions.length > 0) {
+      parsedTranscript.questions.forEach((qa, idx) => {
+        console.log(`[Test Webhook] Q${idx + 1}: "${qa.question.substring(0, 80)}..."`);
+        console.log(`[Test Webhook] A${idx + 1}: "${qa.answer.substring(0, 80)}..."`);
+      });
+    } else {
+      console.warn("[Test Webhook] WARNING: No Q&A pairs found!");
+      console.warn("[Test Webhook] Full transcript:", testTranscript);
+    }
 
     // Evaluate
     let evaluation;
@@ -104,7 +119,7 @@ AI: Very good. That concludes our examination. Thank you for your time.`;
     // Prepare sheet row
     const sheetRow: VivaSheetRow = {
       timestamp: new Date().toISOString(),
-      callId: `test-call-${Date.now()}`,
+      callId: callId, // Use provided callId or generate test one
       studentEmail,
       studentName,
       subject,
@@ -114,7 +129,7 @@ AI: Very good. That concludes our examination. Thank you for your time.`;
       maxTotalMarks: evaluation.maxTotalMarks,
       percentage: evaluation.percentage,
       transcript: testTranscript.substring(0, 50000),
-      recordingUrl: "https://example.com/test-recording.mp3",
+      recordingUrl: body.recordingUrl || "https://example.com/test-recording.mp3",
       evaluation: evaluationJson,
     };
 

@@ -4,6 +4,8 @@ import { parseTranscript } from "@/lib/utils/transcript-parser";
 import { evaluateViva } from "@/lib/utils/viva-evaluator";
 import { saveToSheets, formatEvaluationForSheet } from "@/lib/utils/sheets";
 import { verifyVapiWebhookSignature } from "@/lib/utils/webhook-signature";
+import { writeFile, mkdir } from "fs/promises";
+import { join } from "path";
 
 // Vapi webhook payload types - they send different message types
 interface VapiWebhookMessage {
@@ -125,6 +127,14 @@ export async function POST(request: Request) {
     if (messageType === "assistant-request") {
       console.log("[Viva Complete] Assistant request - returning empty object");
       return NextResponse.json({});
+    }
+    
+    // CRITICAL: Only process end-of-call events to prevent duplicate saves
+    // VAPI may send multiple webhook events (status-update, transcript, etc.)
+    // We only want to process the final end-of-call-report
+    if (messageType && !isEndOfCall) {
+      console.log(`[Viva Complete] Received ${messageType} event - not an end-of-call event, acknowledging and skipping`);
+      return NextResponse.json({ received: true, type: messageType, note: "Not an end-of-call event, skipping processing" });
     }
     
     // For non-end-of-call events without call data, acknowledge and return
@@ -309,8 +319,16 @@ export async function POST(request: Request) {
           subject
         );
         console.log(
-          `[Viva Complete] Evaluation complete: ${evaluation.totalMarks}/${evaluation.maxTotalMarks} (${evaluation.percentage}%)`
+          `[Viva Complete] ✓ Evaluation complete: ${evaluation.totalMarks}/${evaluation.maxTotalMarks} (${evaluation.percentage}%)`
         );
+        console.log(`[Viva Complete] Evaluation details:`, {
+          questionsEvaluated: evaluation.marks.length,
+          totalMarks: evaluation.totalMarks,
+          maxTotalMarks: evaluation.maxTotalMarks,
+          percentage: evaluation.percentage,
+          hasFeedback: evaluation.feedback.length > 0,
+          overallFeedbackLength: evaluation.overallFeedback.length,
+        });
       } catch (evalError) {
         console.error("[Viva Complete] ERROR: Evaluation failed:", evalError);
         console.error("[Viva Complete] Will still save transcript to sheets with error evaluation");
@@ -357,6 +375,19 @@ export async function POST(request: Request) {
       console.log("[Viva Complete] Using fallback JSON stringification");
     }
 
+    // Save evaluation JSON to file for backup
+    try {
+      const evaluationsDir = join(process.cwd(), "evaluations");
+      await mkdir(evaluationsDir, { recursive: true });
+      const fileName = `evaluation-${callId}-${Date.now()}.json`;
+      const filePath = join(evaluationsDir, fileName);
+      await writeFile(filePath, evaluationJson, "utf-8");
+      console.log(`[Viva Complete] ✓ Saved evaluation JSON to: ${filePath}`);
+    } catch (fileError) {
+      console.warn("[Viva Complete] Could not save evaluation JSON to file:", fileError);
+      // Don't fail if file save fails
+    }
+
     const sheetRow: VivaSheetRow = {
       timestamp,
       callId: callId,
@@ -378,10 +409,28 @@ export async function POST(request: Request) {
     if (!sheetRow.studentEmail || sheetRow.studentEmail === "unknown@example.com") {
       console.warn("[Viva Complete] WARNING: Student email is missing or default");
     }
+    
+    // Validate evaluation was generated
+    console.log("[Viva Complete] Evaluation validation:", {
+      hasEvaluation: !!evaluation,
+      marksCount: evaluation?.marks?.length || 0,
+      feedbackCount: evaluation?.feedback?.length || 0,
+      totalMarks: evaluation?.totalMarks || 0,
+      maxTotalMarks: evaluation?.maxTotalMarks || 0,
+      percentage: evaluation?.percentage || 0,
+      hasOverallFeedback: !!evaluation?.overallFeedback,
+      evaluationJsonLength: evaluationJson?.length || 0,
+    });
+    
     if (!sheetRow.evaluation || sheetRow.evaluation.length === 0) {
       console.error("[Viva Complete] ERROR: Evaluation JSON is empty!");
+      console.error("[Viva Complete] This means evaluation results will NOT be saved!");
     } else {
       console.log("[Viva Complete] ✓ Sheet row data validated");
+      console.log("[Viva Complete] ✓ Evaluation results ready to save:");
+      console.log(`   - Questions: ${evaluation.marks.length}`);
+      console.log(`   - Score: ${evaluation.totalMarks}/${evaluation.maxTotalMarks} (${evaluation.percentage}%)`);
+      console.log(`   - Feedback: ${evaluation.feedback.length} items`);
     }
 
     // Save to Google Sheets - CRITICAL: This must happen for results to be saved

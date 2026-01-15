@@ -119,11 +119,12 @@ export function parseTranscript(transcript: string): ParsedTranscript {
 
   const questions: QuestionAnswerPair[] = [];
 
-  // Clean the transcript first
+  // Split by lines FIRST before cleaning (to preserve line structure)
+  // This is critical - we need to split by newlines before cleaning removes them
+  const lines = transcript.split("\n").filter((line) => line.trim().length > 0);
+  
+  // Clean the full transcript for the conversation field (but don't use it for parsing)
   const cleanedTranscript = cleanTranscriptText(transcript);
-
-  // Split by lines and parse - handle various formats
-  const lines = cleanedTranscript.split("\n").filter((line) => line.trim().length > 0);
 
   let currentQuestion: string | null = null;
   let currentAnswer: string = "";
@@ -141,7 +142,9 @@ export function parseTranscript(transcript: string): ParsedTranscript {
     const studentMatch = trimmedLine.match(/^(?:Student|user|candidate|you):\s*(.+)/i);
 
     if (aiMatch) {
-      const aiMessage = cleanTranscriptText(aiMatch[1]);
+      // Extract the message content first, then clean it
+      const aiMessageRaw = aiMatch[1];
+      const aiMessage = cleanTranscriptText(aiMessageRaw);
 
       // If we have a pending question and answer, save it
       if (currentQuestion && currentAnswer.trim()) {
@@ -175,7 +178,9 @@ export function parseTranscript(transcript: string): ParsedTranscript {
       lastRole = "AI";
       consecutiveStudentMessages = 0;
     } else if (studentMatch) {
-      const studentMessage = cleanTranscriptText(studentMatch[1]);
+      // Extract the message content first, then clean it
+      const studentMessageRaw = studentMatch[1];
+      const studentMessage = cleanTranscriptText(studentMessageRaw);
 
       // Skip empty or very short filler responses
       if (studentMessage.length < 3 || /^(yes|no|ok|okay|yeah|yep|nope|hmm|uh|um)$/i.test(studentMessage)) {

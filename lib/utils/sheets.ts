@@ -221,6 +221,42 @@ async function ensureHeaders(
 }
 
 /**
+ * Check if a call ID already exists in the sheet to prevent duplicates
+ */
+async function callIdExists(
+  sheets: ReturnType<typeof google.sheets>,
+  sheetId: string,
+  callId: string
+): Promise<boolean> {
+  try {
+    // Search for the call ID in column B (Call ID column - we'll need to add this or search in existing columns)
+    // For now, we'll search in all rows to find duplicate call IDs
+    // Note: This is a simple check - in production you might want to use a database
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId: sheetId,
+      range: `'${SHEET_NAME}'!A:K`,
+    });
+
+    const rows = response.data.values || [];
+    // Skip header row
+    for (let i = 1; i < rows.length; i++) {
+      const row = rows[i];
+      // Check if any cell in the row contains the call ID (it might be in the evaluation JSON)
+      const rowText = row.join(" ");
+      if (rowText.includes(callId)) {
+        console.log(`[Sheets] Call ID ${callId} already exists in row ${i + 1}`);
+        return true;
+      }
+    }
+    return false;
+  } catch (error) {
+    // If we can't check, assume it doesn't exist and proceed
+    console.warn("[Sheets] Could not check for duplicate call ID:", error);
+    return false;
+  }
+}
+
+/**
  * Save viva results to Google Sheets
  */
 export async function saveToSheets(
@@ -276,6 +312,18 @@ export async function saveToSheets(
     await ensureHeaders(sheets, config.sheetId);
     console.log("[Sheets] ✓ Headers verified/created");
 
+    // Check if this call ID has already been saved (prevent duplicates)
+    console.log("[Sheets] Checking for duplicate call ID:", row.callId);
+    const alreadyExists = await callIdExists(sheets, config.sheetId, row.callId);
+    if (alreadyExists) {
+      console.warn(`[Sheets] ⚠️  Call ID ${row.callId} already exists in sheet. Skipping duplicate save.`);
+      return { 
+        success: true, 
+        error: "Call ID already exists - duplicate save prevented" 
+      };
+    }
+    console.log("[Sheets] ✓ Call ID is unique, proceeding with save");
+
     // Parse evaluation JSON to get structured data
     let evaluation: VivaEvaluation | null = null;
     try {
@@ -310,6 +358,21 @@ export async function saveToSheets(
       evaluationJson = JSON.stringify(evaluation);
     }
 
+    // Ensure evaluation data is properly formatted for display
+    const scoreDisplay = formatScoreOutOf100(row.percentage);
+    const overallFeedback = evaluation?.overallFeedback || "No feedback available";
+    
+    // Log evaluation summary for verification
+    console.log("[Sheets] Evaluation Summary:", {
+      questionsCount: questionsAnswered,
+      totalMarks: evaluation?.totalMarks || 0,
+      maxMarks: evaluation?.maxTotalMarks || 0,
+      percentage: row.percentage,
+      scoreDisplay,
+      hasOverallFeedback: !!overallFeedback && overallFeedback !== "No feedback available",
+      feedbackLength: overallFeedback.length,
+    });
+
     const rowValues = [
       formatTimestamp(row.timestamp),
       row.studentName || "Unknown",
@@ -317,8 +380,8 @@ export async function saveToSheets(
       row.subject || "Unknown Subject",
       row.topics || "-",
       questionsText, // Column F: Questions Answered
-      formatScoreOutOf100(row.percentage), // Column G: Score
-      evaluation?.overallFeedback || "No feedback available", // Column H: Overall Feedback
+      scoreDisplay, // Column G: Score (out of 100)
+      overallFeedback, // Column H: Overall Feedback
       truncatedTranscript, // Column I: Transcript
       row.recordingUrl || "-", // Column J: Recording
       evaluationJson, // Column K: Evaluation JSON

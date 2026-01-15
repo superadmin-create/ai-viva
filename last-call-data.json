@@ -1,0 +1,1676 @@
+{
+  "id": "019bc0f1-c942-7771-b5d4-db20791481ec",
+  "assistantId": "0f33a98c-8524-4e0c-a092-d412f0667e1b",
+  "status": "ended",
+  "startedAt": "2026-01-15T09:17:10.116Z",
+  "endedAt": "2026-01-15T09:20:31.609Z",
+  "hasTranscript": true,
+  "transcriptLength": 2506,
+  "hasRecording": true,
+  "recordingUrl": "https://storage.vapi.ai/019bc0f1-c942-7771-b5d4-db20791481ec-1768468834164-709ef70c-0eaf-4f94-bfd6-316bc1d3ce14-mono.wav",
+  "messageCount": 14,
+  "transcript": "AI: Hello, Aditya. Welcome to your Viva examination for introduction to stock market. I will be asking you some questions based on technical analysis. Please answer each question to the best of your ability. Let's begin with the first question.\nUser: Okay. Let's begin.\nAI: Question one. Can you explain the primary principles of technical analysis and how they differ from fundamental analysis?\nUser: So, uh, the primary principles of technical analysis are, uh, different because... different from fundamental analysis in the sense of approach. technical analysis is primarily used for taking short term look for the markets and then generating intraday or swing trade ideas. And fundamentals are analyzed for understanding the longer term growth and investment opportunity in a company.\nAI: Thank you, Asithya. Question two. How would you apply moving averages in a trading strategy? Can you provide a specific example?\nUser: I can apply it in various formats, so I can either, uh, find a supporting moving average that can help me buy a stock on dips. Second, I can use a a moving average that act... that is acting as a resistance in a falling stock. Third, I can use it in a combination so that, uh, I can get crossover signals. Uh, for instance, I can use golden crossover, like two hundred moving average and t moving average or five moving average and twenty moving average.\nAI: Alright. Thank you. Question three. If a stock has formed a head and shoulders pattern, what does that indicate, and how might you act on this information?\nUser: This is a bearish, uh, price pattern, and I would generally take a, uh, bearish setup. So I might sell the future if I'm very bearish, or I will then, uh, create a bearboat strategy if I'm normally bearish.\nAI: Thank you. Question four, compare and contrast the use of candlestick patterns and chart patterns in technical analysis. Which do you believe is more reliable and why?\nUser: So in technical analysis, candles are used for clickfitting, and charts are used for, uh, making birthday posters.\nAI: Alright. Thank you. Question five. Imagine you are analyzing a stock that has shown a consistent upward trend but recently has started to consolidate. What steps would you take to determine whether to continue holding or sell the stock?\nUser: Well, in such a case, I would continue holding this top because I would prefer going with my gut instincts.\nAI: Thank you, Aditya, for completing this Viva examination. You may now end the session. Good luck.\n",
+  "messages": [
+    {
+      "role": "system",
+      "time": 1768468629974,
+      "message": "You are an AI Viva Examiner conducting an oral examination for a student.\n\nStudent Info:\n- Name: Aditya\n- Subject: Introduction to Stock Market\n- Topics: Technical Analysis\n\nQUESTIONS TO ASK (USE THESE EXACT QUESTIONS):\nYou must ask these questions in order:\n\nQuestion 1: Can you explain the primary principles of technical analysis and how they differ from fundamental analysis?\nExpected Answer: Technical analysis is based on historical price movements and volume data to forecast future price movements, whereas fundamental analysis evaluates a company's financial health and economic factors. The primary principles of technical analysis include trends, support and resistance levels, and patterns in price charts.\n\nQuestion 2: How would you apply moving averages in a trading strategy? Can you provide a specific example?\nExpected Answer: Moving averages smooth out price data to identify trends over specific periods. For example, a trader might use a 50-day moving average to determine the trend direction and a 200-day moving average for long-term trends. A crossover of the 50-day moving average above the 200-day could signal a bullish trend, prompting a buy signal.\n\nQuestion 3: If a stock has formed a head and shoulders pattern, what does that indicate, and how might you act on this information?\nExpected Answer: A head and shoulders pattern typically indicates a reversal in trend from bullish to bearish. If identified, a trader might consider selling the stock or shorting it, expecting a decline in price after the pattern completes. It's essential to analyze volume accompanying the pattern for confirmation.\n\nQuestion 4: Compare and contrast the use of candlestick patterns and chart patterns in technical analysis. Which do you believe is more reliable and why?\nExpected Answer: Candlestick patterns provide insights into market sentiment and price movement within specific time frames, while chart patterns (like triangles or flags) focus on price movement over broader periods. Some traders might find candlestick patterns more reliable for short-term trades due to their detailed nature, while others may prefer chart patterns for long-term strategies.\n\nQuestion 5: Imagine you are analyzing a stock that has shown a consistent upward trend but recently has started to consolidate. What steps would you take to determine whether to continue holding or sell the stock?\nExpected Answer: I would first look at the volume during the consolidation phase to assess interest. Next, I would analyze key support levels and resistance levels to determine potential breakout or breakdown points. Additionally, I would evaluate technical indicators such as RSI or MACD for overbought or oversold conditions. Based on this analysis, I would decide whether to hold through the consolidation or sell if signs indicate a reversal.\n\nIMPORTANT: Ask these questions ONE AT A TIME. Wait for the student's complete answer before asking the next question.\n\nCRITICAL RULES - FOLLOW THESE STRICTLY:\n\n1. You MUST use the questions provided above - do NOT make up your own questions\n2. Ask ONLY ONE question at a time\n3. After asking a question, WAIT for the student's complete answer\n4. Do NOT ask the next question until the student has finished answering\n5. Listen to the FULL answer before responding\n6. If the student pauses, wait at least 3-5 seconds before assuming they're done\n7. Never ask multiple questions in a single turn\n\nYour Behavior:\n1. Start with: \"Hello Aditya, welcome to your viva examination for Introduction to Stock Market. I'll be asking you some questions. Take your time to think before answering. Let's begin.\"\n2. Ask the provided questions one by one in order\n3. After each question, wait for the student's complete answer\n4. Acknowledge briefly (e.g., \"Thank you\", \"Alright\") then move to next question\n5. If student says \"I don't know\", say \"That's okay, let's move to the next question\"\n6. After all questions, thank the student and end\n\nSpeaking Style:\n- Professional but friendly\n- Moderate pace\n- Clear pronunciation\n- Pause after questions to let student think\n\nEnding:\nAfter all questions: \"Thank you Aditya for completing this viva. You may now end the session. Good luck!\"\n\nIMPORTANT: Never reveal scores or whether answers were correct during the viva.",
+      "secondsFromStart": 0
+    },
+    {
+      "role": "bot",
+      "time": 1768468631547,
+      "source": "",
+      "endTime": 1768468647956,
+      "message": "Hello, Aditya. Welcome to your Viva examination for introduction to stock market. I will be asking you some questions based on technical analysis. Please answer each question to the best of your ability. Let's begin with the first question.",
+      "duration": 16409,
+      "secondsFromStart": 1.431
+    },
+    {
+      "role": "user",
+      "time": 1768468649627,
+      "endTime": 1768468650691,
+      "message": "Okay. Let's begin.",
+      "duration": 1064,
+      "metadata": {
+        "wordLevelConfidence": [
+          {
+            "end": 1768468649981.6667,
+            "word": "Okay.",
+            "start": 1768468649627,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "Okay."
+          },
+          {
+            "end": 1768468650336.3333,
+            "word": "Let's",
+            "start": 1768468649981.6667,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "Let's"
+          },
+          {
+            "end": 1768468650691,
+            "word": "begin.",
+            "start": 1768468650336.3333,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "begin."
+          }
+        ]
+      },
+      "secondsFromStart": 19.511
+    },
+    {
+      "role": "bot",
+      "time": 1768468652019,
+      "source": "",
+      "endTime": 1768468658436,
+      "message": "Question one. Can you explain the primary principles of technical analysis and how they differ from fundamental analysis?",
+      "duration": 5756,
+      "secondsFromStart": 21.903
+    },
+    {
+      "role": "user",
+      "time": 1768468660727,
+      "endTime": 1768468695891,
+      "message": "So, uh, the primary principles of technical analysis are, uh, different because... different from fundamental analysis in the sense of approach. technical analysis is primarily used for taking short term look for the markets and then generating intraday or swing trade ideas. And fundamentals are analyzed for understanding the longer term growth and investment opportunity in a company.",
+      "duration": 34230,
+      "metadata": {
+        "wordLevelConfidence": [
+          {
+            "end": 1768468661212.6365,
+            "word": "So,",
+            "start": 1768468660727,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "So,"
+          },
+          {
+            "end": 1768468661698.2727,
+            "word": "uh,",
+            "start": 1768468661212.6365,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "uh,"
+          },
+          {
+            "end": 1768468662183.9092,
+            "word": "the",
+            "start": 1768468661698.2727,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "the"
+          },
+          {
+            "end": 1768468662669.5454,
+            "word": "primary",
+            "start": 1768468662183.9092,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "primary"
+          },
+          {
+            "end": 1768468663155.182,
+            "word": "principles",
+            "start": 1768468662669.5454,
+            "language": "",
+            "confidence": 0.998,
+            "punctuated_word": "principles"
+          },
+          {
+            "end": 1768468663640.818,
+            "word": "of",
+            "start": 1768468663155.182,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "of"
+          },
+          {
+            "end": 1768468664126.4546,
+            "word": "technical",
+            "start": 1768468663640.818,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "technical"
+          },
+          {
+            "end": 1768468664612.0908,
+            "word": "analysis",
+            "start": 1768468664126.4546,
+            "language": "",
+            "confidence": 0.9995,
+            "punctuated_word": "analysis"
+          },
+          {
+            "end": 1768468665097.7273,
+            "word": "are,",
+            "start": 1768468664612.0908,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "are,"
+          },
+          {
+            "end": 1768468665583.3635,
+            "word": "uh,",
+            "start": 1768468665097.7273,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "uh,"
+          },
+          {
+            "end": 1768468666069,
+            "word": "different",
+            "start": 1768468665583.3635,
+            "language": "",
+            "confidence": 0.999,
+            "punctuated_word": "different"
+          },
+          {
+            "end": 1768468666554.6365,
+            "word": "because",
+            "start": 1768468666069,
+            "language": "",
+            "confidence": 0.9985,
+            "punctuated_word": "because"
+          },
+          {
+            "end": 1768468667040.2727,
+            "word": "...",
+            "start": 1768468666554.6365,
+            "language": "",
+            "confidence": 0.9941,
+            "punctuated_word": "..."
+          },
+          {
+            "end": 1768468667525.9092,
+            "word": "different",
+            "start": 1768468667040.2727,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "different"
+          },
+          {
+            "end": 1768468668011.5454,
+            "word": "from",
+            "start": 1768468667525.9092,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "from"
+          },
+          {
+            "end": 1768468668497.182,
+            "word": "fundamental",
+            "start": 1768468668011.5454,
+            "language": "",
+            "confidence": 0.9956,
+            "punctuated_word": "fundamental"
+          },
+          {
+            "end": 1768468668982.818,
+            "word": "analysis",
+            "start": 1768468668497.182,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "analysis"
+          },
+          {
+            "end": 1768468669468.4546,
+            "word": "in",
+            "start": 1768468668982.818,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "in"
+          },
+          {
+            "end": 1768468669954.0908,
+            "word": "the",
+            "start": 1768468669468.4546,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "the"
+          },
+          {
+            "end": 1768468670439.7273,
+            "word": "sense",
+            "start": 1768468669954.0908,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "sense"
+          },
+          {
+            "end": 1768468670925.3635,
+            "word": "of",
+            "start": 1768468670439.7273,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "of"
+          },
+          {
+            "end": 1768468671411,
+            "word": "approach.",
+            "start": 1768468670925.3635,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "approach."
+          }
+        ]
+      },
+      "secondsFromStart": 30.611
+    },
+    {
+      "role": "bot",
+      "time": 1768468697510,
+      "source": "",
+      "endTime": 1768468706036,
+      "message": "Thank you, Asithya. Question two. How would you apply moving averages in a trading strategy? Can you provide a specific example?",
+      "duration": 6177,
+      "secondsFromStart": 67.394
+    },
+    {
+      "role": "user",
+      "time": 1768468707915,
+      "endTime": 1768468740931,
+      "message": "I can apply it in various formats, so I can either, uh, find a supporting moving average that can help me buy a stock on dips. Second, I can use a a moving average that act... that is acting as a resistance in a falling stock. Third, I can use it in a combination so that, uh, I can get crossover signals. Uh, for instance, I can use golden crossover, like two hundred moving average and t moving average or five moving average and twenty moving average.",
+      "duration": 33016,
+      "metadata": {
+        "wordLevelConfidence": [
+          {
+            "end": 1768468708290.182,
+            "word": "I",
+            "start": 1768468707915,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "I"
+          },
+          {
+            "end": 1768468708665.3635,
+            "word": "can",
+            "start": 1768468708290.182,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "can"
+          },
+          {
+            "end": 1768468709040.5454,
+            "word": "apply",
+            "start": 1768468708665.3635,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "apply"
+          },
+          {
+            "end": 1768468709415.7273,
+            "word": "it",
+            "start": 1768468709040.5454,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "it"
+          },
+          {
+            "end": 1768468709790.9092,
+            "word": "in",
+            "start": 1768468709415.7273,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "in"
+          },
+          {
+            "end": 1768468710166.0908,
+            "word": "various",
+            "start": 1768468709790.9092,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "various"
+          },
+          {
+            "end": 1768468710541.2727,
+            "word": "formats,",
+            "start": 1768468710166.0908,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "formats,"
+          },
+          {
+            "end": 1768468710916.4546,
+            "word": "so",
+            "start": 1768468710541.2727,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "so"
+          },
+          {
+            "end": 1768468711291.6365,
+            "word": "I",
+            "start": 1768468710916.4546,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "I"
+          },
+          {
+            "end": 1768468711666.818,
+            "word": "can",
+            "start": 1768468711291.6365,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "can"
+          },
+          {
+            "end": 1768468712042,
+            "word": "either,",
+            "start": 1768468711666.818,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "either,"
+          },
+          {
+            "end": 1768468712417.182,
+            "word": "uh,",
+            "start": 1768468712042,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "uh,"
+          },
+          {
+            "end": 1768468712792.3635,
+            "word": "find",
+            "start": 1768468712417.182,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "find"
+          },
+          {
+            "end": 1768468713167.5454,
+            "word": "a",
+            "start": 1768468712792.3635,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "a"
+          },
+          {
+            "end": 1768468713542.7273,
+            "word": "supporting",
+            "start": 1768468713167.5454,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "supporting"
+          },
+          {
+            "end": 1768468713917.9092,
+            "word": "moving",
+            "start": 1768468713542.7273,
+            "language": "",
+            "confidence": 0.9922,
+            "punctuated_word": "moving"
+          },
+          {
+            "end": 1768468714293.0908,
+            "word": "average",
+            "start": 1768468713917.9092,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "average"
+          },
+          {
+            "end": 1768468714668.2727,
+            "word": "that",
+            "start": 1768468714293.0908,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "that"
+          },
+          {
+            "end": 1768468715043.4546,
+            "word": "can",
+            "start": 1768468714668.2727,
+            "language": "",
+            "confidence": 0.9995,
+            "punctuated_word": "can"
+          },
+          {
+            "end": 1768468715418.6365,
+            "word": "help",
+            "start": 1768468715043.4546,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "help"
+          },
+          {
+            "end": 1768468715793.818,
+            "word": "me",
+            "start": 1768468715418.6365,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "me"
+          },
+          {
+            "end": 1768468716169,
+            "word": "buy",
+            "start": 1768468715793.818,
+            "language": "",
+            "confidence": 0.9985,
+            "punctuated_word": "buy"
+          },
+          {
+            "end": 1768468716544.182,
+            "word": "a",
+            "start": 1768468716169,
+            "language": "",
+            "confidence": 0.9995,
+            "punctuated_word": "a"
+          },
+          {
+            "end": 1768468716919.3635,
+            "word": "stock",
+            "start": 1768468716544.182,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "stock"
+          },
+          {
+            "end": 1768468717294.5454,
+            "word": "on",
+            "start": 1768468716919.3635,
+            "language": "",
+            "confidence": 0.9995,
+            "punctuated_word": "on"
+          },
+          {
+            "end": 1768468717669.7273,
+            "word": "dips.",
+            "start": 1768468717294.5454,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "dips."
+          },
+          {
+            "end": 1768468718044.9092,
+            "word": "Second,",
+            "start": 1768468717669.7273,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "Second,"
+          },
+          {
+            "end": 1768468718420.0908,
+            "word": "I",
+            "start": 1768468718044.9092,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "I"
+          },
+          {
+            "end": 1768468718795.2727,
+            "word": "can",
+            "start": 1768468718420.0908,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "can"
+          },
+          {
+            "end": 1768468719170.4546,
+            "word": "use",
+            "start": 1768468718795.2727,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "use"
+          },
+          {
+            "end": 1768468719545.6365,
+            "word": "a",
+            "start": 1768468719170.4546,
+            "language": "",
+            "confidence": 0.8442,
+            "punctuated_word": "a"
+          },
+          {
+            "end": 1768468719920.818,
+            "word": "a",
+            "start": 1768468719545.6365,
+            "language": "",
+            "confidence": 0.8457,
+            "punctuated_word": "a"
+          },
+          {
+            "end": 1768468720296,
+            "word": "moving",
+            "start": 1768468719920.818,
+            "language": "",
+            "confidence": 0.9995,
+            "punctuated_word": "moving"
+          },
+          {
+            "end": 1768468720671.182,
+            "word": "average",
+            "start": 1768468720296,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "average"
+          },
+          {
+            "end": 1768468721046.3635,
+            "word": "that",
+            "start": 1768468720671.182,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "that"
+          },
+          {
+            "end": 1768468721421.5454,
+            "word": "act",
+            "start": 1768468721046.3635,
+            "language": "",
+            "confidence": 0.9922,
+            "punctuated_word": "act"
+          },
+          {
+            "end": 1768468721796.7273,
+            "word": "...",
+            "start": 1768468721421.5454,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "..."
+          },
+          {
+            "end": 1768468722171.9092,
+            "word": "that",
+            "start": 1768468721796.7273,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "that"
+          },
+          {
+            "end": 1768468722547.0908,
+            "word": "is",
+            "start": 1768468722171.9092,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "is"
+          },
+          {
+            "end": 1768468722922.2727,
+            "word": "acting",
+            "start": 1768468722547.0908,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "acting"
+          },
+          {
+            "end": 1768468723297.4546,
+            "word": "as",
+            "start": 1768468722922.2727,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "as"
+          },
+          {
+            "end": 1768468723672.6365,
+            "word": "a",
+            "start": 1768468723297.4546,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "a"
+          },
+          {
+            "end": 1768468724047.818,
+            "word": "resistance",
+            "start": 1768468723672.6365,
+            "language": "",
+            "confidence": 0.9995,
+            "punctuated_word": "resistance"
+          },
+          {
+            "end": 1768468724423,
+            "word": "in",
+            "start": 1768468724047.818,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "in"
+          },
+          {
+            "end": 1768468724798.182,
+            "word": "a",
+            "start": 1768468724423,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "a"
+          },
+          {
+            "end": 1768468725173.3635,
+            "word": "falling",
+            "start": 1768468724798.182,
+            "language": "",
+            "confidence": 0.9976,
+            "punctuated_word": "falling"
+          },
+          {
+            "end": 1768468725548.5454,
+            "word": "stock.",
+            "start": 1768468725173.3635,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "stock."
+          },
+          {
+            "end": 1768468725923.7273,
+            "word": "Third,",
+            "start": 1768468725548.5454,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "Third,"
+          },
+          {
+            "end": 1768468726298.9092,
+            "word": "I",
+            "start": 1768468725923.7273,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "I"
+          },
+          {
+            "end": 1768468726674.0908,
+            "word": "can",
+            "start": 1768468726298.9092,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "can"
+          },
+          {
+            "end": 1768468727049.2727,
+            "word": "use",
+            "start": 1768468726674.0908,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "use"
+          },
+          {
+            "end": 1768468727424.4546,
+            "word": "it",
+            "start": 1768468727049.2727,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "it"
+          },
+          {
+            "end": 1768468727799.6365,
+            "word": "in",
+            "start": 1768468727424.4546,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "in"
+          },
+          {
+            "end": 1768468728174.818,
+            "word": "a",
+            "start": 1768468727799.6365,
+            "language": "",
+            "confidence": 0.9922,
+            "punctuated_word": "a"
+          },
+          {
+            "end": 1768468728550,
+            "word": "combination",
+            "start": 1768468728174.818,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "combination"
+          },
+          {
+            "end": 1768468728925.182,
+            "word": "so",
+            "start": 1768468728550,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "so"
+          },
+          {
+            "end": 1768468729300.3635,
+            "word": "that,",
+            "start": 1768468728925.182,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "that,"
+          },
+          {
+            "end": 1768468729675.5454,
+            "word": "uh,",
+            "start": 1768468729300.3635,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "uh,"
+          },
+          {
+            "end": 1768468730050.7273,
+            "word": "I",
+            "start": 1768468729675.5454,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "I"
+          },
+          {
+            "end": 1768468730425.9092,
+            "word": "can",
+            "start": 1768468730050.7273,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "can"
+          },
+          {
+            "end": 1768468730801.0908,
+            "word": "get",
+            "start": 1768468730425.9092,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "get"
+          },
+          {
+            "end": 1768468731176.2727,
+            "word": "crossover",
+            "start": 1768468730801.0908,
+            "language": "",
+            "confidence": 0.9971,
+            "punctuated_word": "crossover"
+          },
+          {
+            "end": 1768468731551.4546,
+            "word": "signals.",
+            "start": 1768468731176.2727,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "signals."
+          },
+          {
+            "end": 1768468731926.6365,
+            "word": "Uh,",
+            "start": 1768468731551.4546,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "Uh,"
+          },
+          {
+            "end": 1768468732301.818,
+            "word": "for",
+            "start": 1768468731926.6365,
+            "language": "",
+            "confidence": 0.9995,
+            "punctuated_word": "for"
+          },
+          {
+            "end": 1768468732677,
+            "word": "instance,",
+            "start": 1768468732301.818,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "instance,"
+          },
+          {
+            "end": 1768468733052.182,
+            "word": "I",
+            "start": 1768468732677,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "I"
+          },
+          {
+            "end": 1768468733427.3635,
+            "word": "can",
+            "start": 1768468733052.182,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "can"
+          },
+          {
+            "end": 1768468733802.5454,
+            "word": "use",
+            "start": 1768468733427.3635,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "use"
+          },
+          {
+            "end": 1768468734177.7273,
+            "word": "golden",
+            "start": 1768468733802.5454,
+            "language": "",
+            "confidence": 0.9663,
+            "punctuated_word": "golden"
+          },
+          {
+            "end": 1768468734552.9092,
+            "word": "crossover,",
+            "start": 1768468734177.7273,
+            "language": "",
+            "confidence": 0.9985,
+            "punctuated_word": "crossover,"
+          },
+          {
+            "end": 1768468734928.0908,
+            "word": "like",
+            "start": 1768468734552.9092,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "like"
+          },
+          {
+            "end": 1768468735303.2727,
+            "word": "two",
+            "start": 1768468734928.0908,
+            "language": "",
+            "confidence": 0.9785,
+            "punctuated_word": "two"
+          },
+          {
+            "end": 1768468735678.4546,
+            "word": "hundred",
+            "start": 1768468735303.2727,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "hundred"
+          },
+          {
+            "end": 1768468736053.6365,
+            "word": "moving",
+            "start": 1768468735678.4546,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "moving"
+          },
+          {
+            "end": 1768468736428.818,
+            "word": "average",
+            "start": 1768468736053.6365,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "average"
+          },
+          {
+            "end": 1768468736804,
+            "word": "and",
+            "start": 1768468736428.818,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "and"
+          },
+          {
+            "end": 1768468737179.182,
+            "word": "t",
+            "start": 1768468736804,
+            "language": "",
+            "confidence": 0.5254,
+            "punctuated_word": "t"
+          },
+          {
+            "end": 1768468737554.3635,
+            "word": "moving",
+            "start": 1768468737179.182,
+            "language": "",
+            "confidence": 0.9873,
+            "punctuated_word": "moving"
+          },
+          {
+            "end": 1768468737929.5454,
+            "word": "average",
+            "start": 1768468737554.3635,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "average"
+          },
+          {
+            "end": 1768468738304.7273,
+            "word": "or",
+            "start": 1768468737929.5454,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "or"
+          },
+          {
+            "end": 1768468738679.9092,
+            "word": "five",
+            "start": 1768468738304.7273,
+            "language": "",
+            "confidence": 0.96,
+            "punctuated_word": "five"
+          },
+          {
+            "end": 1768468739055.0908,
+            "word": "moving",
+            "start": 1768468738679.9092,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "moving"
+          },
+          {
+            "end": 1768468739430.2727,
+            "word": "average",
+            "start": 1768468739055.0908,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "average"
+          },
+          {
+            "end": 1768468739805.4546,
+            "word": "and",
+            "start": 1768468739430.2727,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "and"
+          },
+          {
+            "end": 1768468740180.6365,
+            "word": "twenty",
+            "start": 1768468739805.4546,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "twenty"
+          },
+          {
+            "end": 1768468740555.818,
+            "word": "moving",
+            "start": 1768468740180.6365,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "moving"
+          },
+          {
+            "end": 1768468740931,
+            "word": "average.",
+            "start": 1768468740555.818,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "average."
+          }
+        ]
+      },
+      "secondsFromStart": 77.799
+    },
+    {
+      "role": "bot",
+      "time": 1768468742513,
+      "source": "",
+      "endTime": 1768468750836,
+      "message": "Alright. Thank you. Question three. If a stock has formed a head and shoulders pattern, what does that indicate, and how might you act on this information?",
+      "duration": 8323,
+      "secondsFromStart": 112.397
+    },
+    {
+      "role": "user",
+      "time": 1768468752894,
+      "endTime": 1768468770531,
+      "message": "This is a bearish, uh, price pattern, and I would generally take a, uh, bearish setup. So I might sell the future if I'm very bearish, or I will then, uh, create a bearboat strategy if I'm normally bearish.",
+      "duration": 17637,
+      "metadata": {
+        "wordLevelConfidence": [
+          {
+            "end": 1768468753346.2307,
+            "word": "This",
+            "start": 1768468752894,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "This"
+          },
+          {
+            "end": 1768468753798.4614,
+            "word": "is",
+            "start": 1768468753346.2307,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "is"
+          },
+          {
+            "end": 1768468754250.6924,
+            "word": "a",
+            "start": 1768468753798.4614,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "a"
+          },
+          {
+            "end": 1768468754702.923,
+            "word": "bearish,",
+            "start": 1768468754250.6924,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "bearish,"
+          },
+          {
+            "end": 1768468755155.1538,
+            "word": "uh,",
+            "start": 1768468754702.923,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "uh,"
+          },
+          {
+            "end": 1768468755607.3845,
+            "word": "price",
+            "start": 1768468755155.1538,
+            "language": "",
+            "confidence": 0.998,
+            "punctuated_word": "price"
+          },
+          {
+            "end": 1768468756059.6155,
+            "word": "pattern,",
+            "start": 1768468755607.3845,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "pattern,"
+          },
+          {
+            "end": 1768468756511.8462,
+            "word": "and",
+            "start": 1768468756059.6155,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "and"
+          },
+          {
+            "end": 1768468756964.077,
+            "word": "I",
+            "start": 1768468756511.8462,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "I"
+          },
+          {
+            "end": 1768468757416.3076,
+            "word": "would",
+            "start": 1768468756964.077,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "would"
+          },
+          {
+            "end": 1768468757868.5386,
+            "word": "generally",
+            "start": 1768468757416.3076,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "generally"
+          },
+          {
+            "end": 1768468758320.7693,
+            "word": "take",
+            "start": 1768468757868.5386,
+            "language": "",
+            "confidence": 0.9995,
+            "punctuated_word": "take"
+          },
+          {
+            "end": 1768468758773,
+            "word": "a,",
+            "start": 1768468758320.7693,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "a,"
+          },
+          {
+            "end": 1768468759225.2307,
+            "word": "uh,",
+            "start": 1768468758773,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "uh,"
+          },
+          {
+            "end": 1768468759677.4614,
+            "word": "bearish",
+            "start": 1768468759225.2307,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "bearish"
+          },
+          {
+            "end": 1768468760129.6924,
+            "word": "setup.",
+            "start": 1768468759677.4614,
+            "language": "",
+            "confidence": 0.9995,
+            "punctuated_word": "setup."
+          },
+          {
+            "end": 1768468760581.923,
+            "word": "So",
+            "start": 1768468760129.6924,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "So"
+          },
+          {
+            "end": 1768468761034.1538,
+            "word": "I",
+            "start": 1768468760581.923,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "I"
+          },
+          {
+            "end": 1768468761486.3845,
+            "word": "might",
+            "start": 1768468761034.1538,
+            "language": "",
+            "confidence": 0.9985,
+            "punctuated_word": "might"
+          },
+          {
+            "end": 1768468761938.6155,
+            "word": "sell",
+            "start": 1768468761486.3845,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "sell"
+          },
+          {
+            "end": 1768468762390.8462,
+            "word": "the",
+            "start": 1768468761938.6155,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "the"
+          },
+          {
+            "end": 1768468762843.077,
+            "word": "future",
+            "start": 1768468762390.8462,
+            "language": "",
+            "confidence": 0.9346,
+            "punctuated_word": "future"
+          },
+          {
+            "end": 1768468763295.3076,
+            "word": "if",
+            "start": 1768468762843.077,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "if"
+          },
+          {
+            "end": 1768468763747.5386,
+            "word": "I'm",
+            "start": 1768468763295.3076,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "I'm"
+          },
+          {
+            "end": 1768468764199.7693,
+            "word": "very",
+            "start": 1768468763747.5386,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "very"
+          },
+          {
+            "end": 1768468764652,
+            "word": "bearish,",
+            "start": 1768468764199.7693,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "bearish,"
+          },
+          {
+            "end": 1768468765104.2307,
+            "word": "or",
+            "start": 1768468764652,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "or"
+          },
+          {
+            "end": 1768468765556.4614,
+            "word": "I",
+            "start": 1768468765104.2307,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "I"
+          },
+          {
+            "end": 1768468766008.6924,
+            "word": "will",
+            "start": 1768468765556.4614,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "will"
+          },
+          {
+            "end": 1768468766460.923,
+            "word": "then,",
+            "start": 1768468766008.6924,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "then,"
+          },
+          {
+            "end": 1768468766913.1538,
+            "word": "uh,",
+            "start": 1768468766460.923,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "uh,"
+          },
+          {
+            "end": 1768468767365.3845,
+            "word": "create",
+            "start": 1768468766913.1538,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "create"
+          },
+          {
+            "end": 1768468767817.6155,
+            "word": "a",
+            "start": 1768468767365.3845,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "a"
+          },
+          {
+            "end": 1768468768269.8462,
+            "word": "bearboat",
+            "start": 1768468767817.6155,
+            "language": "",
+            "confidence": 0.5425,
+            "punctuated_word": "bearboat"
+          },
+          {
+            "end": 1768468768722.077,
+            "word": "strategy",
+            "start": 1768468768269.8462,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "strategy"
+          },
+          {
+            "end": 1768468769174.3076,
+            "word": "if",
+            "start": 1768468768722.077,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "if"
+          },
+          {
+            "end": 1768468769626.5386,
+            "word": "I'm",
+            "start": 1768468769174.3076,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "I'm"
+          },
+          {
+            "end": 1768468770078.7693,
+            "word": "normally",
+            "start": 1768468769626.5386,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "normally"
+          },
+          {
+            "end": 1768468770531,
+            "word": "bearish.",
+            "start": 1768468770078.7693,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "bearish."
+          }
+        ]
+      },
+      "secondsFromStart": 122.778
+    },
+    {
+      "role": "bot",
+      "time": 1768468771921,
+      "source": "",
+      "endTime": 1768468782436,
+      "message": "Thank you. Question four, compare and contrast the use of candlestick patterns and chart patterns in technical analysis. Which do you believe is more reliable and why?",
+      "duration": 9605,
+      "secondsFromStart": 141.805
+    },
+    {
+      "role": "user",
+      "time": 1768468784647,
+      "endTime": 1768468793971,
+      "message": "So in technical analysis, candles are used for clickfitting, and charts are used for, uh, making birthday posters.",
+      "duration": 9324,
+      "metadata": {
+        "wordLevelConfidence": [
+          {
+            "end": 1768468785165,
+            "word": "So",
+            "start": 1768468784647,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "So"
+          },
+          {
+            "end": 1768468785683,
+            "word": "in",
+            "start": 1768468785165,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "in"
+          },
+          {
+            "end": 1768468786201,
+            "word": "technical",
+            "start": 1768468785683,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "technical"
+          },
+          {
+            "end": 1768468786719,
+            "word": "analysis,",
+            "start": 1768468786201,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "analysis,"
+          },
+          {
+            "end": 1768468787237,
+            "word": "candles",
+            "start": 1768468786719,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "candles"
+          },
+          {
+            "end": 1768468787755,
+            "word": "are",
+            "start": 1768468787237,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "are"
+          },
+          {
+            "end": 1768468788273,
+            "word": "used",
+            "start": 1768468787755,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "used"
+          },
+          {
+            "end": 1768468788791,
+            "word": "for",
+            "start": 1768468788273,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "for"
+          },
+          {
+            "end": 1768468789309,
+            "word": "clickfitting,",
+            "start": 1768468788791,
+            "language": "",
+            "confidence": 0.9785,
+            "punctuated_word": "clickfitting,"
+          },
+          {
+            "end": 1768468789827,
+            "word": "and",
+            "start": 1768468789309,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "and"
+          },
+          {
+            "end": 1768468790345,
+            "word": "charts",
+            "start": 1768468789827,
+            "language": "",
+            "confidence": 0.9995,
+            "punctuated_word": "charts"
+          },
+          {
+            "end": 1768468790863,
+            "word": "are",
+            "start": 1768468790345,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "are"
+          },
+          {
+            "end": 1768468791381,
+            "word": "used",
+            "start": 1768468790863,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "used"
+          },
+          {
+            "end": 1768468791899,
+            "word": "for,",
+            "start": 1768468791381,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "for,"
+          },
+          {
+            "end": 1768468792417,
+            "word": "uh,",
+            "start": 1768468791899,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "uh,"
+          },
+          {
+            "end": 1768468792935,
+            "word": "making",
+            "start": 1768468792417,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "making"
+          },
+          {
+            "end": 1768468793453,
+            "word": "birthday",
+            "start": 1768468792935,
+            "language": "",
+            "confidence": 0.9995,
+            "punctuated_word": "birthday"
+          },
+          {
+            "end": 1768468793971,
+            "word": "posters.",
+            "start": 1768468793453,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "posters."
+          }
+        ]
+      },
+      "secondsFromStart": 154.531
+    },
+    {
+      "role": "bot",
+      "time": 1768468795629,
+      "source": "",
+      "endTime": 1768468806996,
+      "message": "Alright. Thank you. Question five. Imagine you are analyzing a stock that has shown a consistent upward trend but recently has started to consolidate. What steps would you take to determine whether to continue holding or sell the stock?",
+      "duration": 11367,
+      "secondsFromStart": 165.513
+    },
+    {
+      "role": "user",
+      "time": 1768468809049,
+      "endTime": 1768468816611,
+      "message": "Well, in such a case, I would continue holding this top because I would prefer going with my gut instincts.",
+      "duration": 7562,
+      "metadata": {
+        "wordLevelConfidence": [
+          {
+            "end": 1768468809427.1,
+            "word": "Well,",
+            "start": 1768468809049,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "Well,"
+          },
+          {
+            "end": 1768468809805.2,
+            "word": "in",
+            "start": 1768468809427.1,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "in"
+          },
+          {
+            "end": 1768468810183.3,
+            "word": "such",
+            "start": 1768468809805.2,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "such"
+          },
+          {
+            "end": 1768468810561.4,
+            "word": "a",
+            "start": 1768468810183.3,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "a"
+          },
+          {
+            "end": 1768468810939.5,
+            "word": "case,",
+            "start": 1768468810561.4,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "case,"
+          },
+          {
+            "end": 1768468811317.6,
+            "word": "I",
+            "start": 1768468810939.5,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "I"
+          },
+          {
+            "end": 1768468811695.7,
+            "word": "would",
+            "start": 1768468811317.6,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "would"
+          },
+          {
+            "end": 1768468812073.8,
+            "word": "continue",
+            "start": 1768468811695.7,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "continue"
+          },
+          {
+            "end": 1768468812451.9,
+            "word": "holding",
+            "start": 1768468812073.8,
+            "language": "",
+            "confidence": 0.9985,
+            "punctuated_word": "holding"
+          },
+          {
+            "end": 1768468812830,
+            "word": "this",
+            "start": 1768468812451.9,
+            "language": "",
+            "confidence": 0.6582,
+            "punctuated_word": "this"
+          },
+          {
+            "end": 1768468813208.1,
+            "word": "top",
+            "start": 1768468812830,
+            "language": "",
+            "confidence": 0.7241,
+            "punctuated_word": "top"
+          },
+          {
+            "end": 1768468813586.2,
+            "word": "because",
+            "start": 1768468813208.1,
+            "language": "",
+            "confidence": 0.9995,
+            "punctuated_word": "because"
+          },
+          {
+            "end": 1768468813964.3,
+            "word": "I",
+            "start": 1768468813586.2,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "I"
+          },
+          {
+            "end": 1768468814342.4,
+            "word": "would",
+            "start": 1768468813964.3,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "would"
+          },
+          {
+            "end": 1768468814720.5,
+            "word": "prefer",
+            "start": 1768468814342.4,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "prefer"
+          },
+          {
+            "end": 1768468815098.6,
+            "word": "going",
+            "start": 1768468814720.5,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "going"
+          },
+          {
+            "end": 1768468815476.7,
+            "word": "with",
+            "start": 1768468815098.6,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "with"
+          },
+          {
+            "end": 1768468815854.8,
+            "word": "my",
+            "start": 1768468815476.7,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "my"
+          },
+          {
+            "end": 1768468816232.9,
+            "word": "gut",
+            "start": 1768468815854.8,
+            "language": "",
+            "confidence": 0.9995,
+            "punctuated_word": "gut"
+          },
+          {
+            "end": 1768468816611,
+            "word": "instincts.",
+            "start": 1768468816232.9,
+            "language": "",
+            "confidence": 1,
+            "punctuated_word": "instincts."
+          }
+        ]
+      },
+      "secondsFromStart": 178.933
+    },
+    {
+      "role": "bot",
+      "time": 1768468818964,
+      "source": "",
+      "endTime": 1768468823716,
+      "message": "Thank you, Aditya, for completing this Viva examination. You may now end the session. Good luck.",
+      "duration": 4752,
+      "secondsFromStart": 188.848
+    }
+  ]
+}
