@@ -34,13 +34,27 @@ export async function POST(request: Request) {
     
     // Log the raw payload to understand what Vapi is sending
     console.log("[Viva Complete] ===== WEBHOOK RECEIVED =====");
-    console.log("[Viva Complete] Raw payload:", rawBody.substring(0, 1000));
+    console.log("[Viva Complete] Timestamp:", new Date().toISOString());
+    console.log("[Viva Complete] Raw payload length:", rawBody.length);
+    console.log("[Viva Complete] Raw payload (first 2000 chars):", rawBody.substring(0, 2000));
     
     const body: VapiWebhookMessage = JSON.parse(rawBody);
     
-    // Log the parsed structure
+    // Log the parsed structure comprehensively
     console.log("[Viva Complete] Payload keys:", Object.keys(body));
     console.log("[Viva Complete] Message type:", body.message?.type);
+    console.log("[Viva Complete] Has message object:", !!body.message);
+    console.log("[Viva Complete] Has call at root:", !!body.call);
+    console.log("[Viva Complete] Message keys:", body.message ? Object.keys(body.message) : []);
+    
+    // Log full structure for debugging
+    console.log("[Viva Complete] Full payload structure:", JSON.stringify({
+      hasMessage: !!body.message,
+      hasCall: !!body.call,
+      messageType: body.message?.type,
+      callStatus: body.call?.status || body.message?.call?.status,
+      hasTranscript: !!(body.call?.transcript || body.message?.transcript || body.message?.artifact?.transcript),
+    }, null, 2));
 
     // Verify webhook signature (security)
     const signature = request.headers.get("x-vapi-signature");
@@ -67,45 +81,73 @@ export async function POST(request: Request) {
     const messageType = body.message?.type;
     
     // Extract call data - Vapi sends it in different places
-    const call = body.message?.call || body.call;
-    const artifact = body.message?.artifact;
+    // Try multiple possible locations for call data
+    const call = body.message?.call || 
+                 body.call || 
+                 (body as any).data?.call ||
+                 (body as any).event?.call;
+    const artifact = body.message?.artifact || 
+                     (body as any).artifact ||
+                     (body as any).data?.artifact;
+    
+    // Log where we found the call data
+    if (call) {
+      const callSource = body.message?.call ? "body.message.call" :
+                        body.call ? "body.call" :
+                        (body as any).data?.call ? "body.data.call" :
+                        (body as any).event?.call ? "body.event.call" : "unknown";
+      console.log("[Viva Complete] Found call data at:", callSource);
+    }
     
     // Check if this is an end-of-call event that we should process
     // Process if:
     // 1. Message type is "end-of-call-report" (explicit end event)
     // 2. Call status is "ended" or "completed" (call has finished)
-    // 3. Call exists and has transcript/artifact (has data to process)
+    // 3. Call exists (we'll process even without transcript - can save what we have)
     const callStatus = call?.status;
     const isEndOfCall = messageType === "end-of-call-report" || 
                         callStatus === "ended" || 
                         callStatus === "completed";
-    const hasCallData = !!call && (!!call.transcript || !!artifact?.transcript || !!artifact?.messages);
+    const hasCall = !!call;
+    const hasTranscript = !!(call?.transcript || artifact?.transcript || artifact?.messages);
+    
+    // Log what we received for debugging
+    console.log("[Viva Complete] Webhook analysis:", {
+      messageType: messageType || "none",
+      callStatus: callStatus || "unknown",
+      hasCall,
+      hasTranscript,
+      isEndOfCall,
+      callId: call?.id || "none",
+    });
+    
+    // For assistant-request, always return empty object
+    if (messageType === "assistant-request") {
+      console.log("[Viva Complete] Assistant request - returning empty object");
+      return NextResponse.json({});
+    }
     
     // For non-end-of-call events without call data, acknowledge and return
-    if (messageType && !isEndOfCall && !hasCallData) {
-      console.log(`[Viva Complete] Received ${messageType} event - acknowledging`);
-      
-      // For assistant-request, return empty object to use default assistant
-      if (messageType === "assistant-request") {
-        return NextResponse.json({});
-      }
-      
-      // For other events (status-update, transcript, etc.), just acknowledge
+    if (messageType && !isEndOfCall && !hasCall) {
+      console.log(`[Viva Complete] Received ${messageType} event without call data - acknowledging`);
       return NextResponse.json({ received: true, type: messageType });
     }
 
-    // If we have call data that indicates the call ended, process it
-    if (!call || !hasCallData) {
-      console.log("[Viva Complete] No call data or transcript in payload");
+    // CRITICAL: If we don't have a call object, we can't process
+    if (!hasCall) {
+      console.log("[Viva Complete] No call object in payload");
       console.log("[Viva Complete] Message type:", messageType);
-      console.log("[Viva Complete] Call status:", callStatus);
-      console.log("[Viva Complete] Has call:", !!call);
-      console.log("[Viva Complete] Has transcript:", !!call?.transcript);
-      console.log("[Viva Complete] Has artifact:", !!artifact);
-      console.log("[Viva Complete] Full payload:", JSON.stringify(body, null, 2).substring(0, 2000));
-
-      // Some Vapi events don't have call data - just acknowledge
+      console.log("[Viva Complete] Full payload keys:", Object.keys(body));
+      console.log("[Viva Complete] Full payload (first 2000 chars):", JSON.stringify(body, null, 2).substring(0, 2000));
       return NextResponse.json({ received: true, note: "No call data to process" });
+    }
+
+    // IMPORTANT: Process the call even if transcript is missing
+    // We'll save what we have and note that transcript is missing
+    if (!hasTranscript) {
+      console.warn("[Viva Complete] WARNING: Call ended but no transcript found in payload");
+      console.warn("[Viva Complete] This may be normal if VAPI sends multiple webhooks");
+      console.warn("[Viva Complete] Will still attempt to save call metadata");
     }
 
     // Log what we're processing
@@ -344,6 +386,8 @@ export async function POST(request: Request) {
 
     // Save to Google Sheets - CRITICAL: This must happen for results to be saved
     console.log("[Viva Complete] ===== SAVING TO GOOGLE SHEETS =====");
+    console.log("[Viva Complete] Call ID:", callId);
+    console.log("[Viva Complete] Timestamp:", timestamp);
     console.log("[Viva Complete] Sheet row data:", {
       studentEmail: sheetRow.studentEmail,
       studentName: sheetRow.studentName,
@@ -354,6 +398,8 @@ export async function POST(request: Request) {
       hasEvaluation: !!sheetRow.evaluation,
       evaluationLength: sheetRow.evaluation?.length || 0,
       transcriptLength: sheetRow.transcript.length,
+      hasTranscript: sheetRow.transcript.length > 0,
+      duration: sheetRow.duration,
     });
     
     // Attempt to save with retry logic
@@ -425,6 +471,7 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     const processingTime = Date.now() - startTime;
+    console.error("[Viva Complete] ===== CRITICAL ERROR IN WEBHOOK PROCESSING =====");
     console.error("[Viva Complete] Error processing webhook:", error);
     
     // Log detailed error information
@@ -432,9 +479,17 @@ export async function POST(request: Request) {
       console.error("[Viva Complete] Error details:", {
         message: error.message,
         stack: error.stack,
+        name: error.name,
         processingTime,
       });
+    } else {
+      console.error("[Viva Complete] Error (non-Error object):", JSON.stringify(error, null, 2));
     }
+    
+    // Note: Can't re-read request body here as it's already been consumed
+    // The payload should have been logged at the start of the function
+    
+    console.error("[Viva Complete] ===== END CRITICAL ERROR =====");
 
     // Return 500 but don't expose internal errors to Vapi
     // Vapi will retry if it receives a 5xx status
