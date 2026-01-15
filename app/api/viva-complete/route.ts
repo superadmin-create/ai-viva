@@ -403,7 +403,7 @@ export async function POST(request: Request) {
     });
     
     // Attempt to save with retry logic
-    let sheetsResult = { success: false, error: "Not attempted" };
+    let sheetsResult: { success: boolean; error?: string } = { success: false, error: "Not attempted" };
     const maxRetries = 2;
     
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -437,7 +437,7 @@ export async function POST(request: Request) {
     
     if (!sheetsResult.success) {
       console.error("[Viva Complete] ===== CRITICAL ERROR: FAILED TO SAVE TO SHEETS =====");
-      console.error("[Viva Complete] Error after all retries:", sheetsResult.error);
+      console.error("[Viva Complete] Error after all retries:", sheetsResult.error || "Unknown error");
       console.error("[Viva Complete] This means the results will NOT appear in Google Sheets!");
       console.error("[Viva Complete] Please check:");
       console.error("  1. GOOGLE_PRIVATE_KEY is set correctly in environment variables");
