@@ -380,16 +380,16 @@ export const VapiSession = forwardRef<VapiSessionHandle, VapiSessionProps>(
             topics: topicsValue || "general topics",
           };
 
-          // Build a comprehensive first message
-          // Note: We pass questions via variableValues primarily, firstMessage is just a greeting
-          let firstMessageWithQuestions = `Hello ${studentNameRef.current || "Student"}, welcome to your viva examination for ${subjectRef.current || "the subject"}.`;
+          // Build a brief first message that starts the viva immediately
+          // Keep it short to avoid repetition - the system prompt already handles greeting
+          let firstMessageWithQuestions = "";
           
           if (customQuestions) {
-            // Don't include all questions in firstMessage - let the assistant use variableValues
-            // Just give a brief greeting and instruction
-            firstMessageWithQuestions += ` I will be asking you some questions based on ${topicsValue || "the topics you selected"}. Please answer each question to the best of your ability. Let's begin with the first question.`;
+            // Start directly with the first question - no repeated greeting
+            firstMessageWithQuestions = `Hello ${studentNameRef.current || "Student"}. Let's begin with the first question.`;
           } else {
-            firstMessageWithQuestions += ` I'll be asking you some questions. Let's begin.`;
+            // Brief greeting only, then start
+            firstMessageWithQuestions = `Hello ${studentNameRef.current || "Student"}. Let's begin.`;
           }
 
           // Pass questions via variableValues AND in firstMessage as backup
