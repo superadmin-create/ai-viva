@@ -340,14 +340,14 @@ export async function POST(request: Request) {
             question: qa.question,
             answer: qa.answer,
             marks: 0,
-            maxMarks: 3,
+            maxMarks: 10,
           })),
           feedback: parsedTranscript.questions.map((qa, idx) => ({
             questionNumber: idx + 1,
             feedback: "Evaluation failed - please review manually",
           })),
           totalMarks: 0,
-          maxTotalMarks: parsedTranscript.questions.length * 3,
+          maxTotalMarks: parsedTranscript.questions.length * 10,
           percentage: 0,
           overallFeedback: `Evaluation encountered an error: ${evalError instanceof Error ? evalError.message : "Unknown error"}. Please review the transcript manually.`,
         };

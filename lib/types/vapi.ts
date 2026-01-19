@@ -42,7 +42,7 @@ export interface EvaluationMarks {
   questionNumber: number;
   question: string;
   answer: string;
-  marks: number; // 0-3: 0 (no answer), 1 (partial), 2 (good), 3 (excellent)
+  marks: number; // 0-10: 0-2 (no answer/poor), 3-4 (minimal), 5-6 (basic), 7-8 (good), 9-10 (excellent)
   maxMarks: number;
 }
 
