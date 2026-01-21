@@ -1,64 +1,10 @@
 /**
- * Replit Google Sheets client using OAuth connector
+ * Google Sheets client using Service Account authentication
  */
 
-import { google } from "googleapis";
+import { google, Auth } from "googleapis";
 
-let connectionSettings: any;
-
-async function getAccessToken() {
-  if (connectionSettings && connectionSettings.settings.expires_at && new Date(connectionSettings.settings.expires_at).getTime() > Date.now()) {
-    return connectionSettings.settings.access_token;
-  }
-  
-  const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME;
-  const xReplitToken = process.env.REPL_IDENTITY 
-    ? 'repl ' + process.env.REPL_IDENTITY 
-    : process.env.WEB_REPL_RENEWAL 
-    ? 'depl ' + process.env.WEB_REPL_RENEWAL 
-    : null;
-
-  if (!xReplitToken || !hostname) {
-    return null;
-  }
-
-  try {
-    connectionSettings = await fetch(
-      'https://' + hostname + '/api/v2/connection?include_secrets=true&connector_names=google-sheet',
-      {
-        headers: {
-          'Accept': 'application/json',
-          'X_REPLIT_TOKEN': xReplitToken
-        }
-      }
-    ).then(res => res.json()).then(data => data.items?.[0]);
-
-    const accessToken = connectionSettings?.settings?.access_token || connectionSettings?.settings?.oauth?.credentials?.access_token;
-
-    if (!connectionSettings || !accessToken) {
-      return null;
-    }
-    return accessToken;
-  } catch (error) {
-    console.error("[Google Sheets Client] Failed to get access token:", error);
-    return null;
-  }
-}
-
-export async function getGoogleSheetsClient() {
-  const accessToken = await getAccessToken();
-  
-  if (!accessToken) {
-    return null;
-  }
-
-  const oauth2Client = new google.auth.OAuth2();
-  oauth2Client.setCredentials({
-    access_token: accessToken
-  });
-
-  return google.sheets({ version: 'v4', auth: oauth2Client });
-}
+let cachedAuth: Auth.JWT | null = null;
 
 export function extractSheetId(input: string): string {
   if (!input) return input;
@@ -81,4 +27,54 @@ export function getSheetId(): string | null {
     return null;
   }
   return extractSheetId(sheetIdInput);
+}
+
+interface ServiceAccountConfig {
+  privateKey: string;
+  clientEmail: string;
+}
+
+function getServiceAccountConfig(): ServiceAccountConfig | null {
+  const privateKey = process.env.GOOGLE_PRIVATE_KEY;
+  const clientEmail = process.env.GOOGLE_CLIENT_EMAIL || process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+
+  if (!privateKey || !clientEmail) {
+    return null;
+  }
+
+  return {
+    privateKey: privateKey.replace(/\\n/g, "\n"),
+    clientEmail,
+  };
+}
+
+export async function getGoogleSheetsClient() {
+  const config = getServiceAccountConfig();
+  
+  if (!config) {
+    console.warn("[Google Sheets] Service account not configured. Need GOOGLE_PRIVATE_KEY and GOOGLE_CLIENT_EMAIL");
+    return null;
+  }
+
+  if (!cachedAuth) {
+    cachedAuth = new google.auth.JWT({
+      email: config.clientEmail,
+      key: config.privateKey,
+      scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+    });
+  }
+
+  try {
+    await cachedAuth.authorize();
+  } catch (error) {
+    console.error("[Google Sheets] Authentication failed:", error);
+    cachedAuth = null;
+    return null;
+  }
+
+  return google.sheets({ version: 'v4', auth: cachedAuth });
+}
+
+export function getServiceAccountEmail(): string | null {
+  return process.env.GOOGLE_CLIENT_EMAIL || process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || null;
 }
