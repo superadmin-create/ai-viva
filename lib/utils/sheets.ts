@@ -1,99 +1,86 @@
 /**
  * Google Sheets integration for saving viva results
- * This uses the Google Sheets API via service account
+ * Uses Replit's Google Sheets connector for OAuth-based authentication
  */
 
-import { google, Auth } from "googleapis";
+import { google } from "googleapis";
 import type { VivaSheetRow, VivaEvaluation } from "@/lib/types/vapi";
 
-interface GoogleSheetsConfig {
-  privateKey: string;
-  clientEmail: string;
-  sheetId: string;
+let connectionSettings: any;
+
+async function getAccessToken() {
+  if (connectionSettings && connectionSettings.settings.expires_at && new Date(connectionSettings.settings.expires_at).getTime() > Date.now()) {
+    return connectionSettings.settings.access_token;
+  }
+  
+  const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME;
+  const xReplitToken = process.env.REPL_IDENTITY 
+    ? 'repl ' + process.env.REPL_IDENTITY 
+    : process.env.WEB_REPL_RENEWAL 
+    ? 'depl ' + process.env.WEB_REPL_RENEWAL 
+    : null;
+
+  if (!xReplitToken) {
+    throw new Error('Replit connector token not found');
+  }
+
+  connectionSettings = await fetch(
+    'https://' + hostname + '/api/v2/connection?include_secrets=true&connector_names=google-sheet',
+    {
+      headers: {
+        'Accept': 'application/json',
+        'X_REPLIT_TOKEN': xReplitToken
+      }
+    }
+  ).then(res => res.json()).then(data => data.items?.[0]);
+
+  const accessToken = connectionSettings?.settings?.access_token || connectionSettings?.settings?.oauth?.credentials?.access_token;
+
+  if (!connectionSettings || !accessToken) {
+    throw new Error('Google Sheet not connected');
+  }
+  return accessToken;
 }
 
-// Cache the auth client to avoid re-authentication on each request
-let cachedAuth: Auth.JWT | null = null;
+async function getGoogleSheetsClient() {
+  const accessToken = await getAccessToken();
 
-/**
- * Clear cached auth client (useful when authentication fails)
- */
-function clearAuthCache() {
-  cachedAuth = null;
-  console.log("[Sheets] Cleared authentication cache");
+  const oauth2Client = new google.auth.OAuth2();
+  oauth2Client.setCredentials({
+    access_token: accessToken
+  });
+
+  return google.sheets({ version: 'v4', auth: oauth2Client });
 }
 
 /**
  * Extract Google Sheet ID from URL or return as-is if already an ID
- * Supports formats:
- * - https://docs.google.com/spreadsheets/d/SHEET_ID/edit
- * - https://docs.google.com/spreadsheets/d/SHEET_ID/edit#gid=0
- * - SHEET_ID (direct ID)
  */
 function extractSheetId(input: string): string {
   if (!input) return input;
   
-  // If it's already just an ID (no slashes or special chars), return as-is
   if (!input.includes('/') && !input.includes('http')) {
     return input;
   }
   
-  // Extract from URL pattern: /spreadsheets/d/SHEET_ID/
   const match = input.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
   if (match && match[1]) {
     return match[1];
   }
   
-  // If no match, return as-is (might be malformed, but let Google API handle it)
   return input;
 }
 
 /**
- * Get Google Sheets configuration from environment variables
+ * Get Sheet ID from environment
  */
-function getSheetsConfig(): GoogleSheetsConfig | null {
-  const privateKey = process.env.GOOGLE_PRIVATE_KEY;
-  // Support both naming conventions
-  const clientEmail = process.env.GOOGLE_CLIENT_EMAIL || process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+function getSheetId(): string | null {
   const sheetIdInput = process.env.GOOGLE_SHEET_ID;
-
-  if (!privateKey || !clientEmail || !sheetIdInput) {
-    console.warn(
-      "[Sheets] Google Sheets configuration not found. Required: GOOGLE_PRIVATE_KEY, GOOGLE_CLIENT_EMAIL (or GOOGLE_SERVICE_ACCOUNT_EMAIL), GOOGLE_SHEET_ID"
-    );
+  if (!sheetIdInput) {
+    console.warn("[Sheets] GOOGLE_SHEET_ID not configured");
     return null;
   }
-
-  // Extract sheet ID from URL if provided, or use as-is
-  const sheetId = extractSheetId(sheetIdInput);
-
-  // Unescape newlines in private key (common issue with env vars)
-  const unescapedKey = privateKey.replace(/\\n/g, "\n");
-
-  console.log("[Sheets] Using Google Sheet ID:", sheetId);
-
-  return {
-    privateKey: unescapedKey,
-    clientEmail,
-    sheetId,
-  };
-}
-
-/**
- * Get authenticated Google Sheets client
- */
-function getAuthClient(config: GoogleSheetsConfig) {
-  if (cachedAuth) {
-    return cachedAuth;
-  }
-
-  cachedAuth = new google.auth.JWT({
-    email: config.clientEmail,
-    key: config.privateKey,
-    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-  });
-
-  return cachedAuth;
+  return extractSheetId(sheetIdInput);
 }
 
 /**
@@ -122,10 +109,6 @@ function formatScoreOutOf100(percentage: number): string {
   return `${Math.round(percentage)}/100`;
 }
 
-/**
- * Ensure the sheet has headers (creates them if missing)
- */
-// Sheet name for viva results
 const SHEET_NAME = "Viva Results";
 
 async function ensureHeaders(
@@ -133,7 +116,6 @@ async function ensureHeaders(
   sheetId: string
 ): Promise<void> {
   try {
-    // First, get spreadsheet to check if sheet tab exists
     const spreadsheet = await sheets.spreadsheets.get({
       spreadsheetId: sheetId,
     });
@@ -142,7 +124,6 @@ async function ensureHeaders(
       (sheet) => sheet.properties?.title === SHEET_NAME
     );
 
-    // If sheet doesn't exist, create it
     if (!sheetExists) {
       console.log(`[Sheets] Sheet '${SHEET_NAME}' does not exist, creating it...`);
       try {
@@ -167,7 +148,6 @@ async function ensureHeaders(
       console.log(`[Sheets] ✓ Sheet '${SHEET_NAME}' exists`);
     }
 
-    // Check if first row has headers
     let firstRow: any[] | undefined;
     try {
       const response = await sheets.spreadsheets.values.get({
@@ -176,11 +156,9 @@ async function ensureHeaders(
       });
       firstRow = response.data.values?.[0];
     } catch (e: any) {
-      // If range doesn't exist yet (empty sheet), firstRow will be undefined
       console.log(`[Sheets] Sheet is empty or headers don't exist yet`);
     }
 
-    // If no headers exist, create them
     if (!firstRow || firstRow.length === 0 || firstRow[0] !== "Date & Time") {
       console.log(`[Sheets] Creating headers in '${SHEET_NAME}'...`);
       const headers = [
@@ -211,37 +189,24 @@ async function ensureHeaders(
       console.log(`[Sheets] ✓ Headers already exist in ${SHEET_NAME}`);
     }
   } catch (error) {
-    // Log the error but don't throw - we'll try to append anyway
     console.error("[Sheets] Error in ensureHeaders:", error);
-    if (error instanceof Error) {
-      console.error("[Sheets] Error message:", error.message);
-    }
-    // Don't throw - let the append operation handle the error
   }
 }
 
-/**
- * Check if a call ID already exists in the sheet to prevent duplicates
- */
 async function callIdExists(
   sheets: ReturnType<typeof google.sheets>,
   sheetId: string,
   callId: string
 ): Promise<boolean> {
   try {
-    // Search for the call ID in column B (Call ID column - we'll need to add this or search in existing columns)
-    // For now, we'll search in all rows to find duplicate call IDs
-    // Note: This is a simple check - in production you might want to use a database
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: sheetId,
       range: `'${SHEET_NAME}'!A:K`,
     });
 
     const rows = response.data.values || [];
-    // Skip header row
     for (let i = 1; i < rows.length; i++) {
       const row = rows[i];
-      // Check if any cell in the row contains the call ID (it might be in the evaluation JSON)
       const rowText = row.join(" ");
       if (rowText.includes(callId)) {
         console.log(`[Sheets] Call ID ${callId} already exists in row ${i + 1}`);
@@ -250,7 +215,6 @@ async function callIdExists(
     }
     return false;
   } catch (error) {
-    // If we can't check, assume it doesn't exist and proceed
     console.warn("[Sheets] Could not check for duplicate call ID:", error);
     return false;
   }
@@ -262,59 +226,41 @@ async function callIdExists(
 export async function saveToSheets(
   row: VivaSheetRow
 ): Promise<{ success: boolean; error?: string }> {
-  const config = getSheetsConfig();
-  if (!config) {
-    console.error("[Sheets] Configuration missing - check environment variables");
-    return { success: false, error: "Sheets configuration not found. Check GOOGLE_PRIVATE_KEY, GOOGLE_CLIENT_EMAIL, and GOOGLE_SHEET_ID" };
+  const sheetId = getSheetId();
+  if (!sheetId) {
+    console.error("[Sheets] GOOGLE_SHEET_ID not configured");
+    return { success: false, error: "GOOGLE_SHEET_ID not configured" };
   }
 
   try {
     console.log("[Sheets] ===== Starting save to Google Sheets =====");
-    console.log("[Sheets] Sheet ID:", config.sheetId);
-    console.log("[Sheets] Service Account:", config.clientEmail);
-    console.log("[Sheets] Authenticating with Google Sheets API...");
+    console.log("[Sheets] Sheet ID:", sheetId);
+    console.log("[Sheets] Authenticating via Replit Google Sheets connector...");
 
-    // Get authenticated client - clear cache to force re-auth if needed
-    const auth = getAuthClient(config);
-    
-    // Ensure we have valid credentials
-    try {
-      await auth.authorize();
-      console.log("[Sheets] ✓ Authentication successful");
-    } catch (authError) {
-      console.error("[Sheets] ✗ Authentication failed:", authError);
-      // Clear cache to force re-authentication next time
-      clearAuthCache();
-      const errorMsg = authError instanceof Error ? authError.message : String(authError);
-      throw new Error(`Authentication failed: ${errorMsg}. Check GOOGLE_PRIVATE_KEY and GOOGLE_CLIENT_EMAIL.`);
-    }
+    const sheets = await getGoogleSheetsClient();
+    console.log("[Sheets] ✓ Authentication successful");
 
-    const sheets = google.sheets({ version: "v4", auth });
-
-    // Verify spreadsheet exists and is accessible
     try {
       const spreadsheet = await sheets.spreadsheets.get({
-        spreadsheetId: config.sheetId,
+        spreadsheetId: sheetId,
       });
       console.log("[Sheets] ✓ Spreadsheet found:", spreadsheet.data.properties?.title || "Untitled");
     } catch (spreadsheetError: any) {
       console.error("[Sheets] ✗ Cannot access spreadsheet:", spreadsheetError.message);
       if (spreadsheetError.message?.includes("not found")) {
-        throw new Error(`Spreadsheet not found. Check GOOGLE_SHEET_ID: ${config.sheetId}`);
+        throw new Error(`Spreadsheet not found. Check GOOGLE_SHEET_ID: ${sheetId}`);
       } else if (spreadsheetError.message?.includes("permission") || spreadsheetError.message?.includes("PERMISSION_DENIED")) {
-        throw new Error(`Permission denied. Share the spreadsheet with service account: ${config.clientEmail}`);
+        throw new Error(`Permission denied. Grant access to the spreadsheet.`);
       }
       throw spreadsheetError;
     }
 
-    // Ensure headers exist
     console.log("[Sheets] Ensuring headers exist in sheet:", SHEET_NAME);
-    await ensureHeaders(sheets, config.sheetId);
+    await ensureHeaders(sheets, sheetId);
     console.log("[Sheets] ✓ Headers verified/created");
 
-    // Check if this call ID has already been saved (prevent duplicates)
     console.log("[Sheets] Checking for duplicate call ID:", row.callId);
-    const alreadyExists = await callIdExists(sheets, config.sheetId, row.callId);
+    const alreadyExists = await callIdExists(sheets, sheetId, row.callId);
     if (alreadyExists) {
       console.warn(`[Sheets] ⚠️  Call ID ${row.callId} already exists in sheet. Skipping duplicate save.`);
       return { 
@@ -324,7 +270,6 @@ export async function saveToSheets(
     }
     console.log("[Sheets] ✓ Call ID is unique, proceeding with save");
 
-    // Parse evaluation JSON to get structured data
     let evaluation: VivaEvaluation | null = null;
     try {
       if (row.evaluation) {
@@ -334,23 +279,17 @@ export async function saveToSheets(
       console.warn("[Sheets] Could not parse evaluation JSON");
     }
 
-    // Calculate questions answered
     const questionsAnswered = evaluation?.marks?.length || 0;
     const questionsText = questionsAnswered > 0
       ? `${questionsAnswered} questions`
       : "No questions answered";
 
-    // Prepare row data in cleaner format
-    // Note: Google Sheets has a 50,000 character limit per cell, so truncate transcript
     const truncatedTranscript = row.transcript
       ? row.transcript.substring(0, 49000)
       : "-";
 
-    // Format evaluation JSON for storage
-    // Ensure evaluation is properly stringified if it's an object
     let evaluationJson = "";
     if (row.evaluation) {
-      // If it's already a string, use it; otherwise stringify
       evaluationJson = typeof row.evaluation === 'string' 
         ? row.evaluation 
         : JSON.stringify(row.evaluation);
@@ -358,19 +297,15 @@ export async function saveToSheets(
       evaluationJson = JSON.stringify(evaluation);
     }
 
-    // Ensure evaluation data is properly formatted for display
     const scoreDisplay = formatScoreOutOf100(row.percentage);
     const overallFeedback = evaluation?.overallFeedback || "No feedback available";
     
-    // Log evaluation summary for verification
     console.log("[Sheets] Evaluation Summary:", {
       questionsCount: questionsAnswered,
       totalMarks: evaluation?.totalMarks || 0,
       maxMarks: evaluation?.maxTotalMarks || 0,
       percentage: row.percentage,
       scoreDisplay,
-      hasOverallFeedback: !!overallFeedback && overallFeedback !== "No feedback available",
-      feedbackLength: overallFeedback.length,
     });
 
     const rowValues = [
@@ -379,52 +314,18 @@ export async function saveToSheets(
       row.studentEmail || "unknown@example.com",
       row.subject || "Unknown Subject",
       row.topics || "-",
-      questionsText, // Column F: Questions Answered
-      scoreDisplay, // Column G: Score (out of 100)
-      overallFeedback, // Column H: Overall Feedback
-      truncatedTranscript, // Column I: Transcript
-      row.recordingUrl || "-", // Column J: Recording
-      evaluationJson, // Column K: Evaluation JSON
+      questionsText,
+      scoreDisplay,
+      overallFeedback,
+      truncatedTranscript,
+      row.recordingUrl || "-",
+      evaluationJson,
     ];
 
-    // Verify row has correct number of columns (should be 11: A through K)
-    if (rowValues.length !== 11) {
-      console.error(`[Sheets] ERROR: Row has ${rowValues.length} columns, expected 11. This may cause data misalignment.`);
-    }
-
-    console.log("[Sheets] Preparing to append row:", {
-      sheetId: config.sheetId,
-      sheetName: SHEET_NAME,
-      studentEmail: row.studentEmail,
-      studentName: row.studentName,
-      subject: row.subject,
-      score: rowValues[6],
-      hasEvaluation: !!evaluationJson,
-      evaluationLength: evaluationJson?.length || 0,
-      rowColumns: rowValues.length,
-    });
-
-    // Validate row data before saving
-    if (!row.studentEmail || row.studentEmail === "unknown@example.com") {
-      console.warn("[Sheets] Warning: Student email is missing or default");
-    }
-    if (!row.subject || row.subject === "Unknown Subject") {
-      console.warn("[Sheets] Warning: Subject is missing or default");
-    }
-
-    // Log the actual row values being sent (first 200 chars of each field)
-    console.log("[Sheets] Row values to append:", rowValues.map((val, idx) => {
-      const str = String(val || "");
-      return `[${idx}]: ${str.substring(0, 200)}${str.length > 200 ? "..." : ""}`;
-    }));
-
-    // Append the row to the sheet
-    console.log("[Sheets] Calling Google Sheets API append...");
-    console.log("[Sheets] Range:", `'${SHEET_NAME}'!A:K`);
-    console.log("[Sheets] Sheet ID:", config.sheetId);
+    console.log("[Sheets] Appending row to sheet...");
     
     const response = await sheets.spreadsheets.values.append({
-      spreadsheetId: config.sheetId,
+      spreadsheetId: sheetId,
       range: `'${SHEET_NAME}'!A:K`,
       valueInputOption: "RAW",
       insertDataOption: "INSERT_ROWS",
@@ -432,78 +333,38 @@ export async function saveToSheets(
         values: [rowValues],
       },
     });
-    
-    console.log("[Sheets] API Response received:", {
-      hasUpdates: !!response.data.updates,
-      updatedRange: response.data.updates?.updatedRange,
-      updatedRows: response.data.updates?.updatedRows,
-      updatedCells: response.data.updates?.updatedCells,
-    });
 
-    // Verify the response
     if (response.data.updates) {
       console.log("[Sheets] ✓ Successfully saved to Google Sheets!");
       console.log("[Sheets] Updated range:", response.data.updates.updatedRange);
-      console.log("[Sheets] Updated rows:", response.data.updates.updatedRows);
-      console.log("[Sheets] Updated cells:", response.data.updates.updatedCells);
       return { success: true };
     } else {
       console.warn("[Sheets] ⚠ Append completed but no update info in response");
-      // Still return success if no error was thrown
       return { success: true };
     }
   } catch (error) {
     console.error("[Sheets] ===== ERROR SAVING TO GOOGLE SHEETS =====");
-    console.error("[Sheets] Error type:", error?.constructor?.name || typeof error);
     console.error("[Sheets] Error details:", error);
 
-    // Provide more helpful error messages
     let errorMessage = "Unknown error";
-    let detailedError = "";
     
     if (error instanceof Error) {
       errorMessage = error.message;
-      detailedError = error.stack || error.message;
-
-      // Check for common issues and provide specific guidance
-      if (errorMessage.includes("invalid_grant") || errorMessage.includes("INVALID_GRANT")) {
-        errorMessage = "Authentication failed - Invalid credentials";
-        detailedError = "Check GOOGLE_PRIVATE_KEY and GOOGLE_CLIENT_EMAIL. The private key may be expired or incorrectly formatted.";
-        // Clear auth cache on auth failure
-        clearAuthCache();
-      } else if (errorMessage.includes("not found") || errorMessage.includes("NOT_FOUND")) {
-        errorMessage = "Spreadsheet not found";
-        detailedError = `Check GOOGLE_SHEET_ID: ${config?.sheetId || "not set"}. Ensure the service account has access to the spreadsheet.`;
-      } else if (errorMessage.includes("permission") || errorMessage.includes("PERMISSION_DENIED")) {
-        errorMessage = "Permission denied";
-        detailedError = `Share the spreadsheet with the service account email: ${config?.clientEmail || "not set"}. Grant Editor access.`;
-      } else if (errorMessage.includes("invalid value") || errorMessage.includes("INVALID_ARGUMENT")) {
-        errorMessage = "Invalid data format";
-        detailedError = "Check that all row values are properly formatted. Review the rowValues array in logs.";
-      } else if (errorMessage.includes("quota") || errorMessage.includes("QUOTA_EXCEEDED")) {
-        errorMessage = "API quota exceeded";
-        detailedError = "Google Sheets API quota has been exceeded. Wait a few minutes and try again.";
-      }
     } else if (typeof error === "string") {
       errorMessage = error;
-      detailedError = error;
-    } else {
-      detailedError = JSON.stringify(error, null, 2);
     }
 
     console.error("[Sheets] Error message:", errorMessage);
-    console.error("[Sheets] Detailed error:", detailedError);
-    console.error("[Sheets] ===== END ERROR =====");
 
     return {
       success: false,
-      error: `${errorMessage}. ${detailedError}`,
+      error: errorMessage,
     };
   }
 }
 
 /**
- * Format evaluation data for sheet storage (kept for backward compatibility)
+ * Format evaluation data for sheet storage
  */
 export function formatEvaluationForSheet(
   evaluation: VivaEvaluation

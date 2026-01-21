@@ -1,71 +1,44 @@
 import { NextResponse } from "next/server";
-import { google, Auth } from "googleapis";
+import { getGoogleSheetsClient, getSheetId } from "@/lib/utils/google-sheets-client";
 
 const SHEET_NAME = "Viva Results";
 
-function getSheetsConfig() {
-  const privateKey = process.env.GOOGLE_PRIVATE_KEY;
-  const clientEmail = process.env.GOOGLE_CLIENT_EMAIL || process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
-  const sheetIdInput = process.env.GOOGLE_SHEET_ID;
-
-  if (!privateKey || !clientEmail || !sheetIdInput) {
-    return null;
-  }
-
-  // Extract sheet ID from URL if provided
-  const sheetId = sheetIdInput.includes('/') 
-    ? sheetIdInput.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/)?.[1] || sheetIdInput
-    : sheetIdInput;
-
-  return {
-    privateKey: privateKey.replace(/\\n/g, "\n"),
-    clientEmail,
-    sheetId,
-  };
-}
-
 export async function GET() {
   try {
-    const config = getSheetsConfig();
-    if (!config) {
+    const sheetId = getSheetId();
+    if (!sheetId) {
       return NextResponse.json({
         success: false,
-        error: "Configuration missing. Check GOOGLE_PRIVATE_KEY, GOOGLE_CLIENT_EMAIL, GOOGLE_SHEET_ID",
+        error: "GOOGLE_SHEET_ID not configured",
       }, { status: 400 });
     }
 
-    const auth = new google.auth.JWT({
-      email: config.clientEmail,
-      key: config.privateKey,
-      scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-    });
+    const sheets = await getGoogleSheetsClient();
+    if (!sheets) {
+      return NextResponse.json({
+        success: false,
+        error: "Google Sheets connection not available. Please set up the Google Sheets integration.",
+      }, { status: 400 });
+    }
 
-    await auth.authorize();
-    const sheets = google.sheets({ version: "v4", auth });
-
-    // Test 1: Check if spreadsheet exists
     const spreadsheet = await sheets.spreadsheets.get({
-      spreadsheetId: config.sheetId,
+      spreadsheetId: sheetId,
     });
 
-    // Test 2: Check if sheet tab exists
     const sheetExists = spreadsheet.data.sheets?.some(
       (sheet) => sheet.properties?.title === SHEET_NAME
     );
 
-    // Test 3: Try to read headers
     let headers: string[] = [];
     try {
       const headersResponse = await sheets.spreadsheets.values.get({
-        spreadsheetId: config.sheetId,
+        spreadsheetId: sheetId,
         range: `'${SHEET_NAME}'!A1:K1`,
       });
       headers = headersResponse.data.values?.[0] || [];
     } catch (e) {
-      // Sheet might be empty
     }
 
-    // Test 4: Try to append a test row
     let appendSuccess = false;
     let appendError = "";
     try {
@@ -84,7 +57,7 @@ export async function GET() {
       ];
 
       const appendResponse = await sheets.spreadsheets.values.append({
-        spreadsheetId: config.sheetId,
+        spreadsheetId: sheetId,
         range: `'${SHEET_NAME}'!A:K`,
         valueInputOption: "RAW",
         insertDataOption: "INSERT_ROWS",
@@ -101,8 +74,7 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       config: {
-        sheetId: config.sheetId,
-        clientEmail: config.clientEmail,
+        sheetId: sheetId,
       },
       spreadsheet: {
         title: spreadsheet.data.properties?.title || "Untitled",

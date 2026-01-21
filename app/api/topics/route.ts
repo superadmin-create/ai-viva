@@ -1,38 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { google } from "googleapis";
+import { getGoogleSheetsClient, getSheetId } from "@/lib/utils/google-sheets-client";
 
-// Force dynamic rendering - always fetch fresh data
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 const TOPICS_SHEET_NAME = "Topics";
 
-function getSheetsConfig() {
-  const privateKey = process.env.GOOGLE_PRIVATE_KEY;
-  const clientEmail =
-    process.env.GOOGLE_CLIENT_EMAIL || process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
-  const sheetId = process.env.GOOGLE_SHEET_ID;
-
-  if (!privateKey || !clientEmail || !sheetId) {
-    return null;
-  }
-
-  return {
-    privateKey: privateKey.replace(/\\n/g, "\n"),
-    clientEmail,
-    sheetId,
-  };
-}
-
-function getAuthClient(config: { privateKey: string; clientEmail: string }) {
-  return new google.auth.JWT({
-    email: config.clientEmail,
-    key: config.privateKey,
-    scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
-  });
-}
-
-// GET - Fetch topics for a subject (teacher-defined)
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -45,9 +18,9 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const config = getSheetsConfig();
-    if (!config) {
-      console.log("[Topics API] Google Sheets not configured");
+    const sheetId = getSheetId();
+    if (!sheetId) {
+      console.log("[Topics API] GOOGLE_SHEET_ID not configured");
       return NextResponse.json({
         success: true,
         subject,
@@ -56,13 +29,21 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const auth = getAuthClient(config);
-    const sheets = google.sheets({ version: "v4", auth });
+    const sheets = await getGoogleSheetsClient();
+    if (!sheets) {
+      console.log("[Topics API] Google Sheets client not available");
+      return NextResponse.json({
+        success: true,
+        subject,
+        topics: [],
+        message: "No topics found",
+      });
+    }
 
     let response;
     try {
       response = await sheets.spreadsheets.values.get({
-        spreadsheetId: config.sheetId,
+        spreadsheetId: sheetId,
         range: `'${TOPICS_SHEET_NAME}'!A2:C100`,
       });
     } catch (sheetError) {
@@ -77,16 +58,14 @@ export async function GET(request: NextRequest) {
 
     const rows = response.data.values || [];
 
-    // Filter by subject and active status
-    // Column format: Subject, Topic Name, Status
     const topics = rows
       .filter(
         (row) =>
           row[0]?.toLowerCase() === subject.toLowerCase() &&
-          row[1] && // Has topic name
-          (row[2] === "active" || !row[2]) // Active or no status
+          row[1] &&
+          (row[2] === "active" || !row[2])
       )
-      .map((row) => row[1]); // Return just the topic names
+      .map((row) => row[1]);
 
     console.log(`[Topics API] Found ${topics.length} topics for subject: ${subject}`);
 
