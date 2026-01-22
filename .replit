@@ -45,3 +45,4 @@ run = ["npm", "start"]
 GOOGLE_SHEET_ID = "1dPderiJxJl534xNnzHVVqye9VSx3zZY3ZEgO3vjqpFY"
 EDMINGLE_INSTITUTION_ID = "863"
 EDMINGLE_ORG_ID = "1081"
+RESEND_FROM_EMAIL = "AI Viva <noreply@leapup.in>"
