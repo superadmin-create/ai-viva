@@ -1,56 +1,66 @@
 /**
  * Google Sheets integration for saving viva results
- * Uses Replit's Google Sheets connector for OAuth-based authentication
+ * Uses Service Account authentication
  */
 
-import { google } from "googleapis";
+import { google, Auth } from "googleapis";
 import type { VivaSheetRow, VivaEvaluation } from "@/lib/types/vapi";
 
-let connectionSettings: any;
+let cachedAuth: Auth.JWT | null = null;
 
-async function getAccessToken() {
-  if (connectionSettings && connectionSettings.settings.expires_at && new Date(connectionSettings.settings.expires_at).getTime() > Date.now()) {
-    return connectionSettings.settings.access_token;
+function formatPrivateKey(key: string): string {
+  let formattedKey = key;
+  formattedKey = formattedKey.replace(/\\n/g, '\n');
+  
+  if (!formattedKey.includes('-----BEGIN')) {
+    formattedKey = `-----BEGIN PRIVATE KEY-----\n${formattedKey}\n-----END PRIVATE KEY-----\n`;
   }
   
-  const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME;
-  const xReplitToken = process.env.REPL_IDENTITY 
-    ? 'repl ' + process.env.REPL_IDENTITY 
-    : process.env.WEB_REPL_RENEWAL 
-    ? 'depl ' + process.env.WEB_REPL_RENEWAL 
-    : null;
+  formattedKey = formattedKey
+    .replace(/-----BEGIN PRIVATE KEY-----/, '-----BEGIN PRIVATE KEY-----\n')
+    .replace(/-----END PRIVATE KEY-----/, '\n-----END PRIVATE KEY-----')
+    .replace(/\n\n+/g, '\n');
+  
+  return formattedKey;
+}
 
-  if (!xReplitToken) {
-    throw new Error('Replit connector token not found');
+function getServiceAccountConfig() {
+  const privateKey = process.env.GOOGLE_PRIVATE_KEY;
+  const clientEmail = process.env.GOOGLE_CLIENT_EMAIL || process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+
+  if (!privateKey || !clientEmail) {
+    console.warn("[Sheets] Missing credentials. Required: GOOGLE_PRIVATE_KEY, GOOGLE_CLIENT_EMAIL");
+    return null;
   }
 
-  connectionSettings = await fetch(
-    'https://' + hostname + '/api/v2/connection?include_secrets=true&connector_names=google-sheet',
-    {
-      headers: {
-        'Accept': 'application/json',
-        'X_REPLIT_TOKEN': xReplitToken
-      }
-    }
-  ).then(res => res.json()).then(data => data.items?.[0]);
-
-  const accessToken = connectionSettings?.settings?.access_token || connectionSettings?.settings?.oauth?.credentials?.access_token;
-
-  if (!connectionSettings || !accessToken) {
-    throw new Error('Google Sheet not connected');
-  }
-  return accessToken;
+  return {
+    privateKey: formatPrivateKey(privateKey),
+    clientEmail,
+  };
 }
 
 async function getGoogleSheetsClient() {
-  const accessToken = await getAccessToken();
+  const config = getServiceAccountConfig();
+  
+  if (!config) {
+    throw new Error('Google Sheets credentials not configured');
+  }
 
-  const oauth2Client = new google.auth.OAuth2();
-  oauth2Client.setCredentials({
-    access_token: accessToken
+  cachedAuth = new google.auth.JWT({
+    email: config.clientEmail,
+    key: config.privateKey,
+    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
   });
 
-  return google.sheets({ version: 'v4', auth: oauth2Client });
+  try {
+    await cachedAuth.authorize();
+    console.log("[Sheets] Successfully authenticated as:", config.clientEmail);
+  } catch (error) {
+    console.error("[Sheets] Authentication failed:", error);
+    throw new Error('Google Sheets authentication failed');
+  }
+
+  return google.sheets({ version: 'v4', auth: cachedAuth });
 }
 
 /**
@@ -235,7 +245,7 @@ export async function saveToSheets(
   try {
     console.log("[Sheets] ===== Starting save to Google Sheets =====");
     console.log("[Sheets] Sheet ID:", sheetId);
-    console.log("[Sheets] Authenticating via Replit Google Sheets connector...");
+    console.log("[Sheets] Authenticating via Service Account...");
 
     const sheets = await getGoogleSheetsClient();
     console.log("[Sheets] ✓ Authentication successful");

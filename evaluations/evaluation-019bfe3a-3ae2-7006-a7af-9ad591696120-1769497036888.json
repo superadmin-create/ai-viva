@@ -1,0 +1,66 @@
+{
+  "marks": [
+    {
+      "questionNumber": 1,
+      "question": "Question one, do you explain the concept of derivative spreads and how they function in the capital markets?",
+      "answer": "If everybody has spreads or mixtures of a few derivative contracts, so in ord to take a directional or non directional approach, several investors select derivative spreads. For instance, for a non directional approach, they can sell two contracts at the same spike price. So it may be a call contract and a put contract from the same spike price, and we can create heads by adding out of money, all, and support.",
+      "marks": 10,
+      "maxMarks": 10
+    },
+    {
+      "questionNumber": 2,
+      "question": "What are the potential benefits and risks?",
+      "answer": "Can you repeat the question,",
+      "marks": 2,
+      "maxMarks": 10
+    },
+    {
+      "questionNumber": 3,
+      "question": "What are the potential benefits and risks?",
+      "answer": "If the markets are directional and the investor or the investor has a bias in a particular direction, the investor might take a vertical strategy by eith going for a debit strategy, which is buying an option, or net buying, or going for a or going for a credit spread, which is creating a sell selling based strategy. So according to the bias, they can eith record bull call spread, bear call spread, bull put spread we are put straight or simple naked ball buying or call getting room or put time or. That's it.",
+      "marks": 10,
+      "maxMarks": 10
+    },
+    {
+      "questionNumber": 4,
+      "question": "Alright. Thank you. Now moving on to question three. Question three, how would you approach analyzing the profitability of the straddle versus a strangle strategy in options trading? What",
+      "answer": "Yes. You can add the Viva here.",
+      "marks": 4,
+      "maxMarks": 10
+    }
+  ],
+  "feedback": [
+    {
+      "questionNumber": 1,
+      "feedback": "Excellent answer with comprehensive coverage and deep understanding demonstrated.",
+      "strengths": [
+        "Provided a response"
+      ]
+    },
+    {
+      "questionNumber": 2,
+      "feedback": "No answer or completely incorrect. Please review this topic thoroughly.",
+      "weaknesses": [
+        "Answer could be more detailed"
+      ]
+    },
+    {
+      "questionNumber": 3,
+      "feedback": "Excellent answer with comprehensive coverage and deep understanding demonstrated.",
+      "strengths": [
+        "Provided a response"
+      ]
+    },
+    {
+      "questionNumber": 4,
+      "feedback": "Minimal understanding shown. Try to provide more details, examples, and correct key concepts.",
+      "weaknesses": [
+        "Answer could be more detailed"
+      ]
+    }
+  ],
+  "totalMarks": 26,
+  "maxTotalMarks": 40,
+  "percentage": 65,
+  "overallFeedback": "Good performance! You demonstrated solid understanding of the core concepts and answered 4 questions. Your responses showed that you have a foundation in the subject, but there's room to provide more detailed explanations and examples. Focus on elaborating your answers with specific examples, real-world applications, and connecting related concepts to strengthen your understanding further."
+}
