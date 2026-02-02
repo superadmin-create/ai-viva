@@ -1,0 +1,66 @@
+{
+  "marks": [
+    {
+      "questionNumber": 1,
+      "question": "Can you explain the fundamental concept of price action and how it differs from oth trading strategies such as technical indicators?",
+      "answer": "Price action basically is the analysis of movement of price on the basis of the chat patterns, and it differs in the sense that it usually does not follow general rule.",
+      "marks": 6,
+      "maxMarks": 10
+    },
+    {
+      "questionNumber": 2,
+      "question": "Thank you, Anuj. Question two, how would you apply price action analysis to develop a trading strategy in a volatile market?",
+      "answer": "What did I locate? I would not trust too much on the trend lines, the foods, and resistance. Instead, I would focus more on marking zones, support zones, resistance zones, and trade accordingly.",
+      "marks": 6,
+      "maxMarks": 10
+    },
+    {
+      "questionNumber": 3,
+      "question": "Alright. Thank you. Question three, given a price chart showing a series of high highs and high lows, how would you analyze this trend and what implications does it have for future price movements?",
+      "answer": "I would identify this train as a bullish train, and this would have implication that the prices will move up.",
+      "marks": 6,
+      "maxMarks": 10
+    },
+    {
+      "questionNumber": 4,
+      "question": "Thank you. Question four, compare and contrast the effectiveness of price action trading with that of algorithmic trading. What are the strengths and weaknesses of each?",
+      "answer": "Tri section trading is very different from algorithmic trading in the sense that it while the form does not follow any specific definable rule, the latt does.",
+      "marks": 6,
+      "maxMarks": 10
+    }
+  ],
+  "feedback": [
+    {
+      "questionNumber": 1,
+      "feedback": "Basic understanding demonstrated but missing important details. Elaborate with examples and connections.",
+      "strengths": [
+        "Provided a response"
+      ]
+    },
+    {
+      "questionNumber": 2,
+      "feedback": "Basic understanding demonstrated but missing important details. Elaborate with examples and connections.",
+      "strengths": [
+        "Provided a response"
+      ]
+    },
+    {
+      "questionNumber": 3,
+      "feedback": "Basic understanding demonstrated but missing important details. Elaborate with examples and connections.",
+      "strengths": [
+        "Provided a response"
+      ]
+    },
+    {
+      "questionNumber": 4,
+      "feedback": "Basic understanding demonstrated but missing important details. Elaborate with examples and connections.",
+      "strengths": [
+        "Provided a response"
+      ]
+    }
+  ],
+  "totalMarks": 24,
+  "maxTotalMarks": 40,
+  "percentage": 60,
+  "overallFeedback": "Good performance! You demonstrated solid understanding of the core concepts and answered 4 questions. Your responses showed that you have a foundation in the subject, but there's room to provide more detailed explanations and examples. Focus on elaborating your answers with specific examples, real-world applications, and connecting related concepts to strengthen your understanding further."
+}
