@@ -197,17 +197,18 @@ export async function POST(request: Request) {
     console.log("  - call.customer?.email:", call.customer?.email);
     console.log("  - call.assistantOverrides?.variableValues?.studentEmail:", call.assistantOverrides?.variableValues?.studentEmail);
 
-    // Try to get student info from metadata first, then variableValues, then customer data
+    // PRIORITY: Customer object is most reliable (persists through webhooks)
+    // Then metadata, then variableValues as fallback
     const studentEmail = 
+      call.customer?.email ||
       metadata.studentEmail || 
       variableValues.studentEmail || 
-      call.customer?.email ||
       call.assistantOverrides?.variableValues?.studentEmail ||
       "";
     const studentName = 
+      call.customer?.name ||
       metadata.studentName || 
       variableValues.studentName || 
-      call.customer?.name ||
       call.assistantOverrides?.variableValues?.studentName ||
       "Unknown";
     const subject = metadata.subject || variableValues.subject || call.assistantOverrides?.variableValues?.subject || "Unknown Subject";
