@@ -188,12 +188,30 @@ export async function POST(request: Request) {
 
     console.log("[Viva Complete] Extracted metadata:", JSON.stringify(metadata, null, 2));
     console.log("[Viva Complete] Variable values:", JSON.stringify(variableValues, null, 2));
+    
+    // Log all possible email locations for debugging
+    console.log("[Viva Complete] Email search locations:");
+    console.log("  - metadata.studentEmail:", metadata.studentEmail);
+    console.log("  - variableValues.studentEmail:", variableValues.studentEmail);
+    console.log("  - call.customer?.number:", call.customer?.number);
+    console.log("  - call.customer?.email:", call.customer?.email);
+    console.log("  - call.assistantOverrides?.variableValues?.studentEmail:", call.assistantOverrides?.variableValues?.studentEmail);
 
-    // Try to get student info from metadata first, then variableValues as fallback
-    const studentEmail = metadata.studentEmail || variableValues.studentEmail;
-    const studentName = metadata.studentName || variableValues.studentName || "Unknown";
-    const subject = metadata.subject || variableValues.subject || "Unknown Subject";
-    const topics = metadata.topics || variableValues.topics || "";
+    // Try to get student info from metadata first, then variableValues, then customer data
+    const studentEmail = 
+      metadata.studentEmail || 
+      variableValues.studentEmail || 
+      call.customer?.email ||
+      call.assistantOverrides?.variableValues?.studentEmail ||
+      "";
+    const studentName = 
+      metadata.studentName || 
+      variableValues.studentName || 
+      call.customer?.name ||
+      call.assistantOverrides?.variableValues?.studentName ||
+      "Unknown";
+    const subject = metadata.subject || variableValues.subject || call.assistantOverrides?.variableValues?.subject || "Unknown Subject";
+    const topics = metadata.topics || variableValues.topics || call.assistantOverrides?.variableValues?.topics || "";
 
     console.log("[Viva Complete] Final student data:", { studentEmail, studentName, subject, topics });
 
