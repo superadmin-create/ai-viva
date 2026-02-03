@@ -414,20 +414,14 @@ export const VapiSession = forwardRef<VapiSessionHandle, VapiSessionProps>(
           const cleanAssistantId = String(assistantId).trim();
 
           // Start the call with variableValues and metadata
-          // Use type assertion to include customer data (for webhook access)
-          const startOptions: Record<string, any> = {
+          // Note: VAPI web SDK doesn't support customer object in assistantOverrides
+          // Email will be passed through metadata and variableValues
+          await vapi.start(cleanAssistantId, { 
             variableValues,
             firstMessage: firstMessageWithQuestions,
             metadata,
-            // Customer object persists to webhook - critical for email capture
-            customer: {
-              name: studentNameRef.current || "Student",
-              email: studentEmailRef.current || "",
-            },
-          };
-
-          await vapi.start(cleanAssistantId, startOptions as any);
-          console.log("[VapiSession] Call start initiated with customer email:", studentEmailRef.current);
+          });
+          console.log("[VapiSession] Call start initiated with metadata email:", metadata.studentEmail);
 
         } catch (err) {
           console.error("[VapiSession] Init error:", err);
