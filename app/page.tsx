@@ -266,10 +266,17 @@ function HomeContent() {
               </div>
             </div>
 
-            <div className="mb-8 text-center">
+            <div className="mb-6 text-center">
               <h1 className="mb-3 bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-3xl font-bold text-transparent dark:from-slate-100 dark:to-slate-300 md:text-4xl">
                 Student Registration
               </h1>
+              <div className="mx-auto mb-4 max-w-md rounded-lg border border-blue-200 bg-blue-50 p-4 text-left dark:border-blue-800 dark:bg-blue-950">
+                <ol className="list-decimal space-y-2 pl-5 text-sm text-blue-800 dark:text-blue-300">
+                  <li>Enter the email id that you have registered with us</li>
+                  <li>Check the Spam folder if you have not received the OTP</li>
+                  <li>Allow permission for microphone to proceed with the Viva</li>
+                </ol>
+              </div>
               <p className="text-lg text-slate-600 dark:text-slate-400">
                 Please fill in your details to continue
               </p>
