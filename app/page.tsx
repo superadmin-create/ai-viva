@@ -249,10 +249,10 @@ function HomeContent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
-      <div className="container mx-auto px-4 py-8 md:py-16">
+      <div className="container mx-auto px-3 py-4 sm:px-4 sm:py-8 md:py-16">
         <div className="mx-auto max-w-2xl">
-          <div className="rounded-2xl border border-slate-200/50 bg-white/80 p-6 shadow-2xl shadow-slate-900/5 backdrop-blur-xl transition-all duration-300 hover:shadow-2xl hover:shadow-slate-900/10 dark:border-slate-700/50 dark:bg-slate-800/80 dark:shadow-slate-900/20 dark:hover:shadow-slate-900/30 md:p-10">
-            <div className="mb-8 flex justify-center">
+          <div className="rounded-xl border border-slate-200/50 bg-white/80 p-4 shadow-2xl shadow-slate-900/5 backdrop-blur-xl transition-all duration-300 dark:border-slate-700/50 dark:bg-slate-800/80 dark:shadow-slate-900/20 sm:rounded-2xl sm:p-6 md:p-10">
+            <div className="mb-4 flex justify-center sm:mb-8">
               <div className="relative">
                 <div className="absolute inset-0 animate-pulse rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 opacity-20 blur-xl"></div>
                 <Image
@@ -261,23 +261,23 @@ function HomeContent() {
                   width={200}
                   height={60}
                   priority
-                  className="relative z-10 h-auto drop-shadow-lg"
+                  className="relative z-10 h-auto w-[140px] drop-shadow-lg sm:w-[200px]"
                 />
               </div>
             </div>
 
-            <div className="mb-6 text-center">
-              <h1 className="mb-3 bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-3xl font-bold text-transparent dark:from-slate-100 dark:to-slate-300 md:text-4xl">
+            <div className="mb-4 text-center sm:mb-6">
+              <h1 className="mb-2 bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-2xl font-bold text-transparent dark:from-slate-100 dark:to-slate-300 sm:mb-3 sm:text-3xl md:text-4xl">
                 Student Registration
               </h1>
-              <div className="mx-auto mb-4 max-w-md rounded-lg border border-blue-200 bg-blue-50 p-4 text-left dark:border-blue-800 dark:bg-blue-950">
-                <ol className="list-decimal space-y-2 pl-5 text-sm text-blue-800 dark:text-blue-300">
+              <div className="mx-auto mb-3 rounded-lg border border-blue-200 bg-blue-50 p-3 text-left dark:border-blue-800 dark:bg-blue-950 sm:mb-4 sm:max-w-md sm:p-4">
+                <ol className="list-decimal space-y-1.5 pl-4 text-xs text-blue-800 dark:text-blue-300 sm:space-y-2 sm:pl-5 sm:text-sm">
                   <li>Enter the email id that you have registered with us</li>
                   <li>Check the Spam folder if you have not received the OTP</li>
                   <li>Allow permission for microphone to proceed with the Viva</li>
                 </ol>
               </div>
-              <p className="text-lg text-slate-600 dark:text-slate-400">
+              <p className="text-base text-slate-600 dark:text-slate-400 sm:text-lg">
                 Please fill in your details to continue
               </p>
             </div>
@@ -285,14 +285,14 @@ function HomeContent() {
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-5"
+                className="space-y-4 sm:space-y-5"
               >
                 <FormField
                   control={form.control}
                   name="fullName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="font-semibold text-slate-700 dark:text-slate-300">
+                      <FormLabel className="text-sm font-semibold text-slate-700 dark:text-slate-300 sm:text-base">
                         Full Name
                       </FormLabel>
                       <FormControl>
@@ -300,7 +300,7 @@ function HomeContent() {
                           placeholder="Enter your full name"
                           {...field}
                           disabled={isLoading}
-                          className="h-12 border-slate-300 text-base transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:focus:border-blue-400 dark:focus:ring-blue-400/20"
+                          className="h-11 border-slate-300 text-sm transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:focus:border-blue-400 dark:focus:ring-blue-400/20 sm:h-12 sm:text-base"
                         />
                       </FormControl>
                       <FormMessage />
@@ -313,7 +313,7 @@ function HomeContent() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="font-semibold text-slate-700 dark:text-slate-300">
+                      <FormLabel className="text-sm font-semibold text-slate-700 dark:text-slate-300 sm:text-base">
                         Email
                       </FormLabel>
                       <FormControl>
@@ -322,7 +322,7 @@ function HomeContent() {
                           placeholder="Enter your email"
                           {...field}
                           disabled={isLoading}
-                          className="h-12 border-slate-300 text-base transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:focus:border-blue-400 dark:focus:ring-blue-400/20"
+                          className="h-11 border-slate-300 text-sm transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:focus:border-blue-400 dark:focus:ring-blue-400/20 sm:h-12 sm:text-base"
                         />
                       </FormControl>
                       <FormMessage />
@@ -335,7 +335,7 @@ function HomeContent() {
                   name="phone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="font-semibold text-slate-700 dark:text-slate-300">
+                      <FormLabel className="text-sm font-semibold text-slate-700 dark:text-slate-300 sm:text-base">
                         Phone
                       </FormLabel>
                       <FormControl>
@@ -345,7 +345,7 @@ function HomeContent() {
                           maxLength={10}
                           {...field}
                           disabled={isLoading}
-                          className="h-12 border-slate-300 text-base transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:focus:border-blue-400 dark:focus:ring-blue-400/20"
+                          className="h-11 border-slate-300 text-sm transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:focus:border-blue-400 dark:focus:ring-blue-400/20 sm:h-12 sm:text-base"
                         />
                       </FormControl>
                       <FormMessage />
@@ -356,10 +356,10 @@ function HomeContent() {
                 {/* Subject Field - Locked or Dropdown */}
                 {isSubjectLocked ? (
                   <div>
-                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 sm:text-base">
                       Subject
                     </label>
-                    <div className="mt-2 flex h-12 cursor-not-allowed items-center rounded-lg border border-gray-200 bg-gray-100 px-4 py-3 text-gray-700 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                    <div className="mt-2 flex h-11 cursor-not-allowed items-center rounded-lg border border-gray-200 bg-gray-100 px-3 py-2.5 text-sm text-gray-700 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300 sm:h-12 sm:px-4 sm:py-3 sm:text-base">
                       {lockedSubject}
                     </div>
                   </div>
@@ -369,7 +369,7 @@ function HomeContent() {
                     name="subject"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="font-semibold text-slate-700 dark:text-slate-300">
+                        <FormLabel className="text-sm font-semibold text-slate-700 dark:text-slate-300 sm:text-base">
                           Subject
                         </FormLabel>
                         <Select
@@ -378,7 +378,7 @@ function HomeContent() {
                           disabled={isLoading || isLoadingSubjects}
                         >
                           <FormControl>
-                            <SelectTrigger className="h-12 border-slate-300 text-base transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:focus:border-blue-400 dark:focus:ring-blue-400/20">
+                            <SelectTrigger className="h-11 border-slate-300 text-sm transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:focus:border-blue-400 dark:focus:ring-blue-400/20 sm:h-12 sm:text-base">
                               <SelectValue
                                 placeholder={
                                   isLoadingSubjects
@@ -405,10 +405,10 @@ function HomeContent() {
                 {/* Topic Field - Locked or Dropdown */}
                 {isTopicLocked ? (
                   <div>
-                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 sm:text-base">
                       Topic
                     </label>
-                    <div className="mt-2 flex h-12 cursor-not-allowed items-center rounded-lg border border-gray-200 bg-gray-100 px-4 py-3 text-gray-700 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                    <div className="mt-2 flex h-11 cursor-not-allowed items-center rounded-lg border border-gray-200 bg-gray-100 px-3 py-2.5 text-sm text-gray-700 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300 sm:h-12 sm:px-4 sm:py-3 sm:text-base">
                       {lockedTopic.includes(",")
                         ? lockedTopic.split(",").join(", ")
                         : lockedTopic}
@@ -420,7 +420,7 @@ function HomeContent() {
                     name="topic"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="font-semibold text-slate-700 dark:text-slate-300">
+                        <FormLabel className="text-sm font-semibold text-slate-700 dark:text-slate-300 sm:text-base">
                           Topic{" "}
                           <span className="font-normal text-slate-400">
                             (Optional)
@@ -432,7 +432,7 @@ function HomeContent() {
                           disabled={isLoading || isLoadingTopics}
                         >
                           <FormControl>
-                            <SelectTrigger className="h-12 border-slate-300 text-base transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:focus:border-blue-400 dark:focus:ring-blue-400/20">
+                            <SelectTrigger className="h-11 border-slate-300 text-sm transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:focus:border-blue-400 dark:focus:ring-blue-400/20 sm:h-12 sm:text-base">
                               <SelectValue
                                 placeholder={
                                   isLoadingTopics
@@ -470,7 +470,7 @@ function HomeContent() {
 
                 <Button
                   type="submit"
-                  className="h-12 w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-base font-semibold text-white shadow-lg shadow-blue-500/30 transition-all duration-300 hover:from-blue-700 hover:to-indigo-700 hover:shadow-xl hover:shadow-blue-500/40 disabled:cursor-not-allowed disabled:opacity-50 dark:shadow-blue-500/20"
+                  className="h-11 w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition-all duration-300 hover:from-blue-700 hover:to-indigo-700 hover:shadow-xl hover:shadow-blue-500/40 disabled:cursor-not-allowed disabled:opacity-50 dark:shadow-blue-500/20 sm:h-12 sm:text-base"
                   disabled={isLoading || isLoadingSubjects}
                 >
                   {isLoading ? (
