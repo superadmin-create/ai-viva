@@ -38,5 +38,13 @@ Required (see .env.example):
 - `RESEND_API_KEY` - Resend API key for emails
 - `NEXT_PUBLIC_APP_URL` - Public app URL
 
+## Data Storage
+- **Google Sheets**: Primary storage for viva results (dual write)
+- **Admin PostgreSQL Database** (Neon): External admin panel database (`ADMIN_DATABASE_URL` secret) with `viva_results` table for production data storage
+- Both the `/api/viva-complete` webhook and `/api/sync-results` endpoint save to both Google Sheets and the admin database
+- The admin database uses `vapi_call_id` as a deduplication key
+
 ## Recent Changes
+- February 2026: Added dual persistence to admin PostgreSQL database (lib/utils/admin-db.ts)
+- February 2026: Updated sync-results and viva-complete endpoints to save to admin DB
 - January 2026: Configured for Replit environment (port 5000, allowedDevOrigins)

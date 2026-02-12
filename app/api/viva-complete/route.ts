@@ -3,6 +3,7 @@ import type { VivaSheetRow } from "@/lib/types/vapi";
 import { parseTranscript } from "@/lib/utils/transcript-parser";
 import { evaluateViva } from "@/lib/utils/viva-evaluator";
 import { saveToSheets, formatEvaluationForSheet } from "@/lib/utils/sheets";
+import { saveToAdminDb } from "@/lib/utils/admin-db";
 import { verifyVapiWebhookSignature } from "@/lib/utils/webhook-signature";
 import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
@@ -520,13 +521,47 @@ export async function POST(request: Request) {
       // Sheets save can be retried later if needed, but we've logged all details
     }
 
-    // Log completion
+    let adminDbSaved = false;
+    try {
+      let evaluationObj;
+      try {
+        evaluationObj = typeof evaluationJson === "string" ? JSON.parse(evaluationJson) : evaluation;
+      } catch {
+        evaluationObj = evaluation;
+      }
+
+      const adminDbResult = await saveToAdminDb({
+        timestamp,
+        student_name: studentName,
+        student_email: studentEmail || "unknown@example.com",
+        subject,
+        topics,
+        questions_answered: evaluation.marks?.length || 0,
+        score: evaluation.totalMarks || 0,
+        overall_feedback: evaluation.overallFeedback || "",
+        transcript: transcript.substring(0, 50000),
+        recording_url: recordingUrl,
+        evaluation: evaluationObj,
+        vapi_call_id: callId,
+        teacher_email: metadata.teacherEmail || "",
+        marks_breakdown: evaluation.marks || [],
+      });
+
+      adminDbSaved = adminDbResult.success;
+      if (adminDbResult.success) {
+        console.log("[Viva Complete] Saved to admin database");
+      } else {
+        console.warn("[Viva Complete] Admin DB save issue:", adminDbResult.error);
+      }
+    } catch (dbError) {
+      console.error("[Viva Complete] Admin DB save error:", dbError);
+    }
+
     const processingTime = Date.now() - startTime;
     console.log(
       `[Viva Complete] Successfully processed call ${callId} in ${processingTime}ms`
     );
 
-    // Return 200 OK
     return NextResponse.json({
       success: true,
       callId: callId,
@@ -536,6 +571,7 @@ export async function POST(request: Request) {
         percentage: evaluation.percentage,
       },
       sheetsSaved: sheetsResult.success,
+      adminDbSaved,
     });
   } catch (error) {
     const processingTime = Date.now() - startTime;

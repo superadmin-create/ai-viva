@@ -3,6 +3,7 @@ import type { VivaSheetRow } from "@/lib/types/vapi";
 import { parseTranscript } from "@/lib/utils/transcript-parser";
 import { evaluateViva } from "@/lib/utils/viva-evaluator";
 import { saveToSheets, formatEvaluationForSheet } from "@/lib/utils/sheets";
+import { saveToAdminDb } from "@/lib/utils/admin-db";
 
 const VAPI_API_BASE = "https://api.vapi.ai";
 
@@ -181,6 +182,32 @@ async function processCall(call: any): Promise<{
   };
 
   const sheetsResult = await saveToSheets(sheetRow);
+
+  let evaluationObj;
+  try {
+    evaluationObj = typeof sheetRow.evaluation === "string" ? JSON.parse(sheetRow.evaluation) : sheetRow.evaluation;
+  } catch {
+    evaluationObj = {};
+  }
+
+  const adminDbResult = await saveToAdminDb({
+    timestamp: sheetRow.timestamp,
+    student_name: studentName,
+    student_email: studentEmail || "unknown@example.com",
+    subject,
+    topics,
+    questions_answered: evaluation.marks?.length || 0,
+    score: evaluation.totalMarks || 0,
+    overall_feedback: evaluation.overallFeedback || "",
+    transcript: sheetRow.transcript,
+    recording_url: sheetRow.recordingUrl,
+    evaluation: evaluationObj,
+    vapi_call_id: callId,
+    teacher_email: metadata.teacherEmail || variableValues.teacherEmail || "",
+    marks_breakdown: evaluation.marks || [],
+  });
+
+  console.log(`[Sync Results] Admin DB save for ${callId}:`, adminDbResult.success ? "success" : adminDbResult.error);
 
   if (sheetsResult.success) {
     const isDuplicate = sheetsResult.error?.includes("already exists");
