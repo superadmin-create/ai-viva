@@ -55,7 +55,7 @@ function getSavedFormData(): Partial<FormValues> {
 
 function HomeContent() {
   const [isLoading, setIsLoading] = useState(false);
-  const [subjects, setSubjects] = useState<string[]>([]);
+  const [subjects, setSubjects] = useState<{ name: string; teacherEmail: string }[]>([]);
   const [topics, setTopics] = useState<string[]>([]);
   const [isLoadingSubjects, setIsLoadingSubjects] = useState(true);
   const [isLoadingTopics, setIsLoadingTopics] = useState(false);
@@ -75,15 +75,18 @@ function HomeContent() {
         const response = await fetch("/api/subjects");
         const data = await response.json();
         if (data.success && data.subjects) {
-          setSubjects(data.subjects);
+          const subjectList = data.subjects.map((s: any) =>
+            typeof s === "string" ? { name: s, teacherEmail: "" } : s
+          );
+          setSubjects(subjectList);
         }
       } catch (error) {
         console.error("Failed to fetch subjects:", error);
         setSubjects([
-          "Data Structures",
-          "DBMS",
-          "Operating Systems",
-          "Computer Networks",
+          { name: "Data Structures", teacherEmail: "" },
+          { name: "DBMS", teacherEmail: "" },
+          { name: "Operating Systems", teacherEmail: "" },
+          { name: "Computer Networks", teacherEmail: "" },
         ]);
       } finally {
         setIsLoadingSubjects(false);
@@ -183,7 +186,7 @@ function HomeContent() {
   };
 
   const onSubmit = async (data: FormValues) => {
-    if (!subjects.includes(data.subject) && !isSubjectLocked) {
+    if (!subjects.some(s => s.name === data.subject) && !isSubjectLocked) {
       form.setError("subject", { message: "Please select a valid subject" });
       return;
     }
@@ -214,7 +217,12 @@ function HomeContent() {
         return;
       }
 
-      sessionStorage.setItem("studentFormData", JSON.stringify(data));
+      const matchedSubject = subjects.find(s => s.name === data.subject);
+      const formDataWithTeacher = {
+        ...data,
+        teacherEmail: matchedSubject?.teacherEmail || "",
+      };
+      sessionStorage.setItem("studentFormData", JSON.stringify(formDataWithTeacher));
 
       const otpResponse = await fetch("/api/send-otp", {
         method: "POST",
@@ -389,9 +397,9 @@ function HomeContent() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {subjects.map((subject) => (
-                              <SelectItem key={subject} value={subject}>
-                                {subject}
+                            {subjects.map((subjectObj) => (
+                              <SelectItem key={subjectObj.name} value={subjectObj.name}>
+                                {subjectObj.name}
                               </SelectItem>
                             ))}
                           </SelectContent>

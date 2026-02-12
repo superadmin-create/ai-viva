@@ -3,7 +3,7 @@ import type { VivaSheetRow } from "@/lib/types/vapi";
 import { parseTranscript } from "@/lib/utils/transcript-parser";
 import { evaluateViva } from "@/lib/utils/viva-evaluator";
 import { saveToSheets, formatEvaluationForSheet } from "@/lib/utils/sheets";
-import { saveToAdminDb } from "@/lib/utils/admin-db";
+import { saveToAdminDb, lookupTeacherEmail } from "@/lib/utils/admin-db";
 
 const VAPI_API_BASE = "https://api.vapi.ai";
 
@@ -190,6 +190,11 @@ async function processCall(call: any): Promise<{
     evaluationObj = {};
   }
 
+  let teacherEmail = metadata.teacherEmail || variableValues.teacherEmail || "";
+  if (!teacherEmail && subject) {
+    teacherEmail = await lookupTeacherEmail(subject);
+  }
+
   const adminDbResult = await saveToAdminDb({
     timestamp: sheetRow.timestamp,
     student_name: studentName,
@@ -200,10 +205,10 @@ async function processCall(call: any): Promise<{
     score: evaluation.totalMarks || 0,
     overall_feedback: evaluation.overallFeedback || "",
     transcript: sheetRow.transcript,
-    recording_url: sheetRow.recordingUrl,
+    recording_url: sheetRow.recordingUrl || "",
     evaluation: evaluationObj,
     vapi_call_id: callId,
-    teacher_email: metadata.teacherEmail || variableValues.teacherEmail || "",
+    teacher_email: teacherEmail,
     marks_breakdown: evaluation.marks || [],
   });
 

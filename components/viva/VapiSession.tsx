@@ -31,6 +31,7 @@ interface VapiSessionProps {
   studentName: string;
   subject: string;
   topics?: string[];
+  teacherEmail?: string;
   onSessionEnd: (transcript?: string) => void;
   onStatusChange: (status: CallStatus) => void;
   onCallStart: () => void;
@@ -48,6 +49,7 @@ export const VapiSession = forwardRef<VapiSessionHandle, VapiSessionProps>(
       studentName,
       subject,
       topics = [],
+      teacherEmail = "",
       onSessionEnd,
       onStatusChange,
       onCallStart,
@@ -377,6 +379,7 @@ export const VapiSession = forwardRef<VapiSessionHandle, VapiSessionProps>(
             studentName: studentNameRef.current || "Student",
             studentEmail: studentEmailRef.current || "",
             subject: subjectRef.current || "General",
+            teacherEmail: teacherEmail || "",
             topics: topicsValue || "general topics",
           };
 
@@ -397,6 +400,7 @@ export const VapiSession = forwardRef<VapiSessionHandle, VapiSessionProps>(
             studentName: studentNameRef.current || "Student",
             studentEmail: studentEmailRef.current || "",
             subject: subjectRef.current || "General",
+            teacherEmail: teacherEmail || "",
             topics: topicsValue || "general topics",
             customQuestions: customQuestions || "Generate 5 relevant questions based on the subject and topics.",
           };

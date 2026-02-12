@@ -85,3 +85,39 @@ export async function getAdminDbResultCount(): Promise<number> {
   const result = await db.query("SELECT COUNT(*) FROM viva_results");
   return parseInt(result.rows[0].count, 10);
 }
+
+export async function lookupTeacherEmail(subjectName: string): Promise<string> {
+  try {
+    const db = getPool();
+    const result = await db.query(
+      "SELECT teacher_email FROM subjects WHERE LOWER(TRIM(name)) = LOWER(TRIM($1)) AND status = 'active' LIMIT 1",
+      [subjectName]
+    );
+    if (result.rows[0]?.teacher_email) {
+      return result.rows[0].teacher_email;
+    }
+    const fuzzy = await db.query(
+      "SELECT teacher_email FROM subjects WHERE LOWER(TRIM(name)) LIKE '%' || LOWER(TRIM($1)) || '%' AND status = 'active' AND teacher_email IS NOT NULL AND teacher_email != '' LIMIT 1",
+      [subjectName]
+    );
+    return fuzzy.rows[0]?.teacher_email || "";
+  } catch {
+    return "";
+  }
+}
+
+export async function getTeacherEmailMap(): Promise<Record<string, string>> {
+  const map: Record<string, string> = {};
+  try {
+    const db = getPool();
+    const result = await db.query("SELECT name, teacher_email FROM subjects WHERE status = 'active'");
+    for (const row of result.rows) {
+      if (row.name && row.teacher_email) {
+        map[row.name.toLowerCase().trim()] = row.teacher_email;
+      }
+    }
+  } catch (err) {
+    console.error("[Admin DB] Error fetching teacher email map:", err);
+  }
+  return map;
+}

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getGoogleSheetsClient, getSheetId } from "@/lib/utils/google-sheets-client";
+import { getTeacherEmailMap } from "@/lib/utils/admin-db";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -7,20 +8,25 @@ export const revalidate = 0;
 const SUBJECTS_SHEET_NAME = "Subjects";
 
 const DEFAULT_SUBJECTS = [
-  "Data Structures",
-  "DBMS",
-  "Operating Systems",
-  "Computer Networks",
+  { name: "Data Structures", teacherEmail: "" },
+  { name: "DBMS", teacherEmail: "" },
+  { name: "Operating Systems", teacherEmail: "" },
+  { name: "Computer Networks", teacherEmail: "" },
 ];
 
 export async function GET() {
   const sheetId = getSheetId();
+  const teacherMap = await getTeacherEmailMap();
   
   if (!sheetId) {
     console.log("[Subjects API] GOOGLE_SHEET_ID not configured, returning defaults");
+    const subjects = DEFAULT_SUBJECTS.map(s => ({
+      ...s,
+      teacherEmail: teacherMap[s.name.toLowerCase()] || s.teacherEmail,
+    }));
     return NextResponse.json({ 
       success: true, 
-      subjects: DEFAULT_SUBJECTS,
+      subjects,
       source: "default"
     });
   }
@@ -30,9 +36,13 @@ export async function GET() {
     
     if (!sheets) {
       console.log("[Subjects API] Google Sheets client not available, returning defaults");
+      const subjects = DEFAULT_SUBJECTS.map(s => ({
+        ...s,
+        teacherEmail: teacherMap[s.name.toLowerCase()] || s.teacherEmail,
+      }));
       return NextResponse.json({ 
         success: true, 
-        subjects: DEFAULT_SUBJECTS,
+        subjects,
         source: "default"
       });
     }
@@ -46,12 +56,19 @@ export async function GET() {
     
     const subjects = rows
       .filter((row) => row[0] && (row[2] === "active" || !row[2]))
-      .map((row) => row[0]);
+      .map((row) => ({
+        name: row[0],
+        teacherEmail: teacherMap[row[0].toLowerCase()] || "",
+      }));
 
     if (subjects.length === 0) {
+      const defaultSubjects = DEFAULT_SUBJECTS.map(s => ({
+        ...s,
+        teacherEmail: teacherMap[s.name.toLowerCase()] || s.teacherEmail,
+      }));
       return NextResponse.json({ 
         success: true, 
-        subjects: DEFAULT_SUBJECTS,
+        subjects: defaultSubjects,
         source: "default"
       });
     }
@@ -64,9 +81,13 @@ export async function GET() {
   } catch (error: unknown) {
     console.error("[Subjects API] Error fetching subjects:", error);
     
+    const subjects = DEFAULT_SUBJECTS.map(s => ({
+      ...s,
+      teacherEmail: teacherMap[s.name.toLowerCase()] || s.teacherEmail,
+    }));
     return NextResponse.json({ 
       success: true, 
-      subjects: DEFAULT_SUBJECTS,
+      subjects,
       source: "default"
     });
   }
