@@ -35,7 +35,6 @@ const baseFormSchema = z.object({
     .max(10, "Phone number must be 10 digits")
     .regex(/^\d+$/, "Phone number must contain only digits"),
   subject: z.string().min(1, "Please select a subject"),
-  topic: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof baseFormSchema>;
@@ -56,18 +55,14 @@ function getSavedFormData(): Partial<FormValues> {
 function HomeContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [subjects, setSubjects] = useState<{ name: string; teacherEmail: string }[]>([]);
-  const [topics, setTopics] = useState<string[]>([]);
   const [isLoadingSubjects, setIsLoadingSubjects] = useState(true);
-  const [isLoadingTopics, setIsLoadingTopics] = useState(false);
   const [selectedSubject, setSelectedSubject] = useState<string>("");
   const router = useRouter();
   const searchParams = useSearchParams();
 
   // Get locked subject and topic from URL params
   const lockedSubject = searchParams.get("subject") || "";
-  const lockedTopic = searchParams.get("topic") || "";
   const isSubjectLocked = !!lockedSubject;
-  const isTopicLocked = !!lockedTopic;
 
   useEffect(() => {
     const fetchSubjects = async () => {
@@ -96,35 +91,6 @@ function HomeContent() {
     fetchSubjects();
   }, []);
 
-  useEffect(() => {
-    const fetchTopics = async () => {
-      if (!selectedSubject) {
-        setTopics([]);
-        return;
-      }
-
-      setIsLoadingTopics(true);
-      try {
-        const response = await fetch(
-          `/api/topics?subject=${encodeURIComponent(selectedSubject)}`
-        );
-        const data = await response.json();
-        if (data.success && data.topics) {
-          setTopics(data.topics);
-        } else {
-          setTopics([]);
-        }
-      } catch (error) {
-        console.error("Failed to fetch topics:", error);
-        setTopics([]);
-      } finally {
-        setIsLoadingTopics(false);
-      }
-    };
-
-    fetchTopics();
-  }, [selectedSubject]);
-
   const [isHydrated, setIsHydrated] = useState(false);
 
   const form = useForm<FormValues>({
@@ -134,7 +100,6 @@ function HomeContent() {
       email: "",
       phone: "",
       subject: lockedSubject || undefined,
-      topic: lockedTopic || undefined,
     },
   });
 
@@ -144,10 +109,7 @@ function HomeContent() {
       form.setValue("subject", lockedSubject);
       setSelectedSubject(lockedSubject);
     }
-    if (lockedTopic) {
-      form.setValue("topic", lockedTopic);
-    }
-  }, [lockedSubject, lockedTopic, form]);
+  }, [lockedSubject, form]);
 
   useEffect(() => {
     if (isSubjectLocked) return; // Don't load saved data if subject is locked
@@ -159,10 +121,8 @@ function HomeContent() {
       form.setValue("subject", savedData.subject);
       setSelectedSubject(savedData.subject);
     }
-    if (savedData.topic && !isTopicLocked)
-      form.setValue("topic", savedData.topic);
     setIsHydrated(true);
-  }, [form, isSubjectLocked, isTopicLocked]);
+  }, [form, isSubjectLocked]);
 
   useEffect(() => {
     if (!isHydrated) return;
@@ -182,7 +142,6 @@ function HomeContent() {
     if (isSubjectLocked) return;
     setSelectedSubject(value);
     form.setValue("subject", value);
-    form.setValue("topic", undefined);
   };
 
   const onSubmit = async (data: FormValues) => {
@@ -409,66 +368,6 @@ function HomeContent() {
                     )}
                   />
                 )}
-
-                {/* Topic Field - Locked or Dropdown */}
-                {isTopicLocked ? (
-                  <div>
-                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 sm:text-base">
-                      Topic
-                    </label>
-                    <div className="mt-2 flex h-11 cursor-not-allowed items-center rounded-lg border border-gray-200 bg-gray-100 px-3 py-2.5 text-sm text-gray-700 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300 sm:h-12 sm:px-4 sm:py-3 sm:text-base">
-                      {lockedTopic.includes(",")
-                        ? lockedTopic.split(",").join(", ")
-                        : lockedTopic}
-                    </div>
-                  </div>
-                ) : selectedSubject && !isSubjectLocked ? (
-                  <FormField
-                    control={form.control}
-                    name="topic"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-sm font-semibold text-slate-700 dark:text-slate-300 sm:text-base">
-                          Topic{" "}
-                          <span className="font-normal text-slate-400">
-                            (Optional)
-                          </span>
-                        </FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value}
-                          disabled={isLoading || isLoadingTopics}
-                        >
-                          <FormControl>
-                            <SelectTrigger className="h-11 border-slate-300 text-sm transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:focus:border-blue-400 dark:focus:ring-blue-400/20 sm:h-12 sm:text-base">
-                              <SelectValue
-                                placeholder={
-                                  isLoadingTopics
-                                    ? "Loading topics..."
-                                    : topics.length === 0
-                                      ? "No topics available"
-                                      : "Select a topic (optional)"
-                                }
-                              />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="all">All Topics</SelectItem>
-                            {topics.map((topic) => (
-                              <SelectItem key={topic} value={topic}>
-                                {topic}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <p className="mt-1 text-xs text-slate-500">
-                          Select a specific topic to focus your viva questions
-                        </p>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                ) : null}
 
                 {form.formState.errors.root && (
                   <div className="animate-in-slide rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
