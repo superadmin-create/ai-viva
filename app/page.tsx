@@ -60,9 +60,10 @@ function HomeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Get locked subject and topic from URL params
+  // Get locked subject, topic, and questions from URL params
   const lockedSubject = searchParams.get("subject") || "";
   const isSubjectLocked = !!lockedSubject;
+  const questionsParam = searchParams.get("questions") || "";
 
   useEffect(() => {
     const fetchSubjects = async () => {
@@ -177,10 +178,13 @@ function HomeContent() {
       }
 
       const matchedSubject = subjects.find(s => s.name === data.subject);
-      const formDataWithTeacher = {
+      const formDataWithTeacher: Record<string, any> = {
         ...data,
         teacherEmail: matchedSubject?.teacherEmail || "",
       };
+      if (questionsParam) {
+        formDataWithTeacher.questionCount = parseInt(questionsParam, 10);
+      }
       sessionStorage.setItem("studentFormData", JSON.stringify(formDataWithTeacher));
 
       const otpResponse = await fetch("/api/send-otp", {
