@@ -1,0 +1,23 @@
+{
+  "marks": [],
+  "feedback": [],
+  "totalMarks": 75,
+  "maxTotalMarks": 0,
+  "percentage": 0,
+  "overallFeedback": "Student showed good understanding of AI fundamentals.",
+  "vapiRawEvaluation": {
+    "depth": 65,
+    "clarity": 80,
+    "knowledge": 70,
+    "score": 75,
+    "strengths": [
+      "Good basic definition of AI",
+      "Clear communication skills"
+    ],
+    "improvements": [
+      "Expand on examples of AI",
+      "Improve ability to discuss nuances"
+    ],
+    "teacher_email": "aditya@leapup.in"
+  }
+}

@@ -118,40 +118,63 @@ async function processCall(call: any): Promise<{
 
   // PRIORITY: Use evaluation data from VAPI's structuredData if available
   let evaluation: any;
-  const vapiEvaluation = vapiStructuredData.evaluation || vapiStructuredData.evaluationJson || vapiStructuredData.evaluation_json;
-  const vapiMarksBreakdown = vapiStructuredData.marks_breakdown || vapiStructuredData.marksBreakdown || vapiStructuredData.marks;
+  let vapiProvidedEval = false;
+  const hasVapiStructuredData = Object.keys(vapiStructuredData).length > 0;
   const vapiTeacherEmail = vapiStructuredData.teacher_email || vapiStructuredData.teacherEmail;
 
-  if (vapiEvaluation || vapiMarksBreakdown) {
-    console.log(`[Sync Results] Call ${callId} - Using VAPI evaluation data`);
+  if (hasVapiStructuredData) {
+    console.log(`[Sync Results] Call ${callId} - Using VAPI structured data, keys:`, Object.keys(vapiStructuredData));
+    vapiProvidedEval = true;
+
+    const vapiEvaluation = vapiStructuredData.evaluation || vapiStructuredData.evaluationJson || vapiStructuredData.evaluation_json;
+    const vapiMarksBreakdown = vapiStructuredData.marks_breakdown || vapiStructuredData.marksBreakdown;
 
     let parsedVapiEval: any = {};
-    if (typeof vapiEvaluation === "string") {
-      try { parsedVapiEval = JSON.parse(vapiEvaluation); } catch { parsedVapiEval = vapiEvaluation; }
-    } else if (vapiEvaluation && typeof vapiEvaluation === "object") {
-      parsedVapiEval = vapiEvaluation;
+    if (vapiEvaluation) {
+      if (typeof vapiEvaluation === "string") {
+        try { parsedVapiEval = JSON.parse(vapiEvaluation); } catch { parsedVapiEval = {}; }
+      } else if (typeof vapiEvaluation === "object") {
+        parsedVapiEval = vapiEvaluation;
+      }
     }
 
-    const marks = vapiMarksBreakdown || parsedVapiEval.marks || parsedVapiEval.marks_breakdown || [];
-    const parsedMarks = typeof marks === "string" ? (() => { try { return JSON.parse(marks); } catch { return []; } })() : marks;
+    const marksSource = vapiMarksBreakdown || parsedVapiEval.marks || parsedVapiEval.marks_breakdown || vapiStructuredData.marks;
+    const parsedMarks = typeof marksSource === "string" ? (() => { try { return JSON.parse(marksSource); } catch { return []; } })() : (Array.isArray(marksSource) ? marksSource : []);
+
+    const totalMarks = parsedVapiEval.totalMarks ?? parsedVapiEval.total_marks ?? parsedVapiEval.score
+      ?? vapiStructuredData.totalMarks ?? vapiStructuredData.total_marks ?? vapiStructuredData.score ?? 0;
+    const maxTotalMarks = parsedVapiEval.maxTotalMarks ?? parsedVapiEval.max_total_marks ?? parsedVapiEval.maxMarks
+      ?? vapiStructuredData.maxTotalMarks ?? vapiStructuredData.max_total_marks ?? 0;
+    let percentage = parsedVapiEval.percentage ?? vapiStructuredData.percentage ?? 0;
+    if (percentage === 0 && maxTotalMarks > 0) {
+      percentage = Math.round((totalMarks / maxTotalMarks) * 100);
+    }
+
+    const overallFeedback = parsedVapiEval.overallFeedback ?? parsedVapiEval.overall_feedback
+      ?? vapiStructuredData.overallFeedback ?? vapiStructuredData.overall_feedback
+      ?? vapiAnalysis.summary ?? "";
+
+    const strengths = parsedVapiEval.strengths || vapiStructuredData.strengths || [];
+    const improvements = parsedVapiEval.improvements || vapiStructuredData.improvements || [];
 
     evaluation = {
-      marks: Array.isArray(parsedMarks) ? parsedMarks : [],
+      marks: parsedMarks,
       feedback: parsedVapiEval.feedback || [],
-      totalMarks: parsedVapiEval.totalMarks ?? parsedVapiEval.total_marks ?? parsedVapiEval.score ?? 0,
-      maxTotalMarks: parsedVapiEval.maxTotalMarks ?? parsedVapiEval.max_total_marks ?? parsedVapiEval.maxMarks ?? 0,
-      percentage: parsedVapiEval.percentage ?? 0,
-      overallFeedback: parsedVapiEval.overallFeedback ?? parsedVapiEval.overall_feedback ?? parsedVapiEval.summary ?? vapiAnalysis.summary ?? "",
+      totalMarks,
+      maxTotalMarks,
+      percentage,
+      overallFeedback: typeof overallFeedback === "string" ? overallFeedback :
+        (Array.isArray(strengths) && strengths.length > 0
+          ? `Strengths: ${strengths.join(", ")}. Improvements: ${improvements.join(", ")}`
+          : JSON.stringify(overallFeedback)),
+      vapiRawEvaluation: vapiStructuredData,
     };
 
-    if (evaluation.maxTotalMarks === 0 && Array.isArray(evaluation.marks) && evaluation.marks.length > 0) {
-      evaluation.maxTotalMarks = evaluation.marks.reduce((sum: number, m: any) => sum + (m.maxMarks || m.max_marks || 10), 0);
+    if (evaluation.maxTotalMarks === 0 && parsedMarks.length > 0) {
+      evaluation.maxTotalMarks = parsedMarks.reduce((sum: number, m: any) => sum + (m.maxMarks || m.max_marks || 10), 0);
     }
-    if (evaluation.totalMarks === 0 && Array.isArray(evaluation.marks) && evaluation.marks.length > 0) {
-      evaluation.totalMarks = evaluation.marks.reduce((sum: number, m: any) => sum + (m.marks || m.score || 0), 0);
-    }
-    if (evaluation.percentage === 0 && evaluation.maxTotalMarks > 0) {
-      evaluation.percentage = Math.round((evaluation.totalMarks / evaluation.maxTotalMarks) * 100);
+    if (evaluation.totalMarks === 0 && parsedMarks.length > 0) {
+      evaluation.totalMarks = parsedMarks.reduce((sum: number, m: any) => sum + (m.marks || m.score || 0), 0);
     }
   } else {
     console.log(`[Sync Results] Call ${callId} - No VAPI evaluation, using local evaluation`);
@@ -199,9 +222,12 @@ async function processCall(call: any): Promise<{
     teacherEmail = await lookupTeacherEmail(subject);
   }
 
-  const marksBreakdownJson = evaluation.marks?.length > 0
-    ? JSON.stringify(evaluation.marks)
-    : "";
+  let marksBreakdownJson = "";
+  if (evaluation.marks?.length > 0) {
+    marksBreakdownJson = JSON.stringify(evaluation.marks);
+  } else if (vapiProvidedEval && evaluation.vapiRawEvaluation) {
+    marksBreakdownJson = JSON.stringify(evaluation.vapiRawEvaluation);
+  }
 
   const sheetRow: VivaSheetRow = {
     timestamp,
@@ -230,6 +256,10 @@ async function processCall(call: any): Promise<{
     evaluationObj = {};
   }
 
+  const marksBreakdownForDb = evaluation.marks?.length > 0
+    ? evaluation.marks
+    : (vapiProvidedEval && evaluation.vapiRawEvaluation ? evaluation.vapiRawEvaluation : []);
+
   const adminDbResult = await saveToAdminDb({
     timestamp: sheetRow.timestamp,
     student_name: studentName,
@@ -244,7 +274,7 @@ async function processCall(call: any): Promise<{
     evaluation: evaluationObj,
     vapi_call_id: callId,
     teacher_email: teacherEmail,
-    marks_breakdown: evaluation.marks || [],
+    marks_breakdown: marksBreakdownForDb,
   });
 
   console.log(`[Sync Results] Admin DB save for ${callId}:`, adminDbResult.success ? "success" : adminDbResult.error);
