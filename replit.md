@@ -39,10 +39,15 @@ Required (see .env.example):
 - `NEXT_PUBLIC_APP_URL` - Public app URL
 
 ## Data Storage
-- **Google Sheets**: Primary storage for viva results (dual write)
-- **Admin PostgreSQL Database** (Neon): External admin panel database (`ADMIN_DATABASE_URL` secret) with `viva_results` table for production data storage
-- Both the `/api/viva-complete` webhook and `/api/sync-results` endpoint save to both Google Sheets and the admin database
-- The admin database uses `vapi_call_id` as a deduplication key
+- **Google Sheets**: Storage for viva results (dual write with admin DB)
+- **Admin PostgreSQL Database** (Neon): External admin panel database (`ADMIN_DATABASE_URL` secret)
+  - `viva_results` table: production data storage (deduplication by `vapi_call_id`)
+  - `subjects` table: subject list with teacher_email mappings
+  - `topics` table: topics per subject with status and teacher_email
+  - `viva_questions` table: exact questions per subject/topic with expected answers and difficulty
+- Both `/api/viva-complete` and `/api/sync-results` save to both Google Sheets and the admin database
+- `/api/subjects`, `/api/topics`, `/api/get-questions` all read from the admin database (not Google Sheets)
+- VAPI receives the exact questions from the admin database and asks them verbatim
 
 ## VAPI Webhook Data Flow
 - VAPI sends evaluation data in `message.analysis.structuredData` (evaluation JSON, teacher_email, marks_breakdown)
@@ -51,6 +56,8 @@ Required (see .env.example):
 - Google Sheets columns: timestamp, callId, studentEmail, studentName, subject, topics, duration, totalMarks, maxTotalMarks, percentage, transcript, recordingUrl, evaluation, teacherEmail, marksBreakdown (A:O)
 
 ## Recent Changes
+- February 17, 2026: Switched /api/subjects, /api/topics, /api/get-questions to read from admin PostgreSQL database instead of Google Sheets
+- February 17, 2026: VAPI now receives exact questions from admin DB viva_questions table
 - February 17, 2026: Updated both endpoints to extract evaluation, teacher_email, marks_breakdown from VAPI's analysis.structuredData
 - February 17, 2026: Added teacher_email and marks_breakdown columns to Google Sheets (columns N, O)
 - February 2026: Added dual persistence to admin PostgreSQL database (lib/utils/admin-db.ts)

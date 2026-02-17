@@ -374,10 +374,9 @@ export const VapiSession = forwardRef<VapiSessionHandle, VapiSessionProps>(
               console.warn("[VapiSession] ⚠ No custom questions found, AI will generate its own");
               console.warn("[VapiSession] API response:", JSON.stringify(questionsData, null, 2));
               console.warn("[VapiSession] To use custom questions:");
-              console.warn("  1. Generate questions in Admin Panel");
-              console.warn("  2. Save them to Google Sheets 'Viva Questions' sheet");
-              console.warn("  3. Ensure subject name matches exactly");
-              console.warn("  4. Set 'Active' column to TRUE");
+              console.warn("  1. Add questions in the Admin Panel");
+              console.warn("  2. Ensure subject name matches exactly");
+              console.warn("  3. Set questions to Active");
             }
           } catch (err) {
             console.log("[VapiSession] Could not fetch custom questions:", err);

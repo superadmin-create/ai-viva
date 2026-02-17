@@ -1,10 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getGoogleSheetsClient, getSheetId } from "@/lib/utils/google-sheets-client";
+import { Pool } from "pg";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-const TOPICS_SHEET_NAME = "Topics";
+let pool: Pool | null = null;
+
+function getPool(): Pool {
+  if (!pool) {
+    const connectionString = process.env.ADMIN_DATABASE_URL;
+    if (!connectionString) {
+      throw new Error("ADMIN_DATABASE_URL is not set");
+    }
+    pool = new Pool({
+      connectionString,
+      max: 5,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 10000,
+    });
+  }
+  return pool;
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,65 +34,25 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const sheetId = getSheetId();
-    if (!sheetId) {
-      console.log("[Topics API] GOOGLE_SHEET_ID not configured");
-      return NextResponse.json({
-        success: true,
-        subject,
-        topics: [],
-        message: "No topics found",
-      });
-    }
+    const db = getPool();
+    const result = await db.query(
+      "SELECT name FROM topics WHERE LOWER(TRIM(subject_name)) = LOWER(TRIM($1)) AND status = 'active' ORDER BY name",
+      [subject]
+    );
 
-    const sheets = await getGoogleSheetsClient();
-    if (!sheets) {
-      console.log("[Topics API] Google Sheets client not available");
-      return NextResponse.json({
-        success: true,
-        subject,
-        topics: [],
-        message: "No topics found",
-      });
-    }
+    const topics = result.rows.map((row) => row.name);
 
-    let response;
-    try {
-      response = await sheets.spreadsheets.values.get({
-        spreadsheetId: sheetId,
-        range: `'${TOPICS_SHEET_NAME}'!A2:C100`,
-      });
-    } catch (sheetError) {
-      console.log("[Topics API] Topics sheet not found");
-      return NextResponse.json({
-        success: true,
-        subject,
-        topics: [],
-        message: "No topics found",
-      });
-    }
-
-    const rows = response.data.values || [];
-
-    const topics = rows
-      .filter(
-        (row) =>
-          row[0]?.toLowerCase() === subject.toLowerCase() &&
-          row[1] &&
-          (row[2] === "active" || !row[2])
-      )
-      .map((row) => row[1]);
-
-    console.log(`[Topics API] Found ${topics.length} topics for subject: ${subject}`);
+    console.log(`[Topics API] Found ${topics.length} topics for subject: ${subject} from admin database`);
 
     return NextResponse.json({
       success: true,
       subject,
       topics,
       count: topics.length,
+      source: "admin_db",
     });
   } catch (error) {
-    console.error("[Topics API] Error:", error);
+    console.error("[Topics API] Error fetching topics from admin DB:", error);
     return NextResponse.json(
       { error: "Failed to fetch topics" },
       { status: 500 }
