@@ -1,0 +1,55 @@
+{
+  "marks": [
+    {
+      "questionNumber": 1,
+      "marks": 8,
+      "maxMarks": 10
+    },
+    {
+      "questionNumber": 2,
+      "marks": 7,
+      "maxMarks": 10
+    },
+    {
+      "questionNumber": 3,
+      "marks": 9,
+      "maxMarks": 10
+    },
+    {
+      "questionNumber": 4,
+      "marks": 8,
+      "maxMarks": 10
+    },
+    {
+      "questionNumber": 5,
+      "marks": 6,
+      "maxMarks": 10
+    }
+  ],
+  "feedback": [
+    {
+      "questionNumber": 1,
+      "feedback": "Good answer"
+    },
+    {
+      "questionNumber": 2,
+      "feedback": "Decent"
+    },
+    {
+      "questionNumber": 3,
+      "feedback": "Excellent"
+    },
+    {
+      "questionNumber": 4,
+      "feedback": "Good"
+    },
+    {
+      "questionNumber": 5,
+      "feedback": "Needs improvement"
+    }
+  ],
+  "totalMarks": 38,
+  "maxTotalMarks": 50,
+  "percentage": 76,
+  "overallFeedback": "Good understanding of technical analysis with room for improvement in candlestick patterns."
+}

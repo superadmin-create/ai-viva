@@ -54,6 +54,10 @@ async function processCall(call: any): Promise<{
   const metadata = call.metadata || {};
   const variableValues =
     call.assistantOverrides?.variableValues || {};
+  const vapiAnalysis = call.analysis || {};
+  const vapiStructuredData = vapiAnalysis.structuredData || {};
+
+  console.log(`[Sync Results] Call ${callId} - VAPI analysis:`, JSON.stringify(vapiAnalysis, null, 2));
 
   const studentEmail =
     call.customer?.email ||
@@ -112,43 +116,68 @@ async function processCall(call: any): Promise<{
     };
   }
 
-  const parsedTranscript = parseTranscript(transcript);
+  // PRIORITY: Use evaluation data from VAPI's structuredData if available
+  let evaluation: any;
+  const vapiEvaluation = vapiStructuredData.evaluation || vapiStructuredData.evaluationJson || vapiStructuredData.evaluation_json;
+  const vapiMarksBreakdown = vapiStructuredData.marks_breakdown || vapiStructuredData.marksBreakdown || vapiStructuredData.marks;
+  const vapiTeacherEmail = vapiStructuredData.teacher_email || vapiStructuredData.teacherEmail;
 
-  let evaluation;
-  if (parsedTranscript.questions.length === 0) {
+  if (vapiEvaluation || vapiMarksBreakdown) {
+    console.log(`[Sync Results] Call ${callId} - Using VAPI evaluation data`);
+
+    let parsedVapiEval: any = {};
+    if (typeof vapiEvaluation === "string") {
+      try { parsedVapiEval = JSON.parse(vapiEvaluation); } catch { parsedVapiEval = vapiEvaluation; }
+    } else if (vapiEvaluation && typeof vapiEvaluation === "object") {
+      parsedVapiEval = vapiEvaluation;
+    }
+
+    const marks = vapiMarksBreakdown || parsedVapiEval.marks || parsedVapiEval.marks_breakdown || [];
+    const parsedMarks = typeof marks === "string" ? (() => { try { return JSON.parse(marks); } catch { return []; } })() : marks;
+
     evaluation = {
-      marks: [],
-      feedback: [],
-      totalMarks: 0,
-      maxTotalMarks: 0,
-      percentage: 0,
-      overallFeedback:
-        "No Q&A pairs could be extracted from the transcript.",
+      marks: Array.isArray(parsedMarks) ? parsedMarks : [],
+      feedback: parsedVapiEval.feedback || [],
+      totalMarks: parsedVapiEval.totalMarks ?? parsedVapiEval.total_marks ?? parsedVapiEval.score ?? 0,
+      maxTotalMarks: parsedVapiEval.maxTotalMarks ?? parsedVapiEval.max_total_marks ?? parsedVapiEval.maxMarks ?? 0,
+      percentage: parsedVapiEval.percentage ?? 0,
+      overallFeedback: parsedVapiEval.overallFeedback ?? parsedVapiEval.overall_feedback ?? parsedVapiEval.summary ?? vapiAnalysis.summary ?? "",
     };
+
+    if (evaluation.maxTotalMarks === 0 && Array.isArray(evaluation.marks) && evaluation.marks.length > 0) {
+      evaluation.maxTotalMarks = evaluation.marks.reduce((sum: number, m: any) => sum + (m.maxMarks || m.max_marks || 10), 0);
+    }
+    if (evaluation.totalMarks === 0 && Array.isArray(evaluation.marks) && evaluation.marks.length > 0) {
+      evaluation.totalMarks = evaluation.marks.reduce((sum: number, m: any) => sum + (m.marks || m.score || 0), 0);
+    }
+    if (evaluation.percentage === 0 && evaluation.maxTotalMarks > 0) {
+      evaluation.percentage = Math.round((evaluation.totalMarks / evaluation.maxTotalMarks) * 100);
+    }
   } else {
-    try {
-      evaluation = await evaluateViva(
-        parsedTranscript.questions,
-        subject
-      );
-    } catch {
+    console.log(`[Sync Results] Call ${callId} - No VAPI evaluation, using local evaluation`);
+
+    const parsedTranscript = parseTranscript(transcript);
+
+    if (parsedTranscript.questions.length === 0) {
       evaluation = {
-        marks: parsedTranscript.questions.map((qa, idx) => ({
-          questionNumber: idx + 1,
-          question: qa.question,
-          answer: qa.answer,
-          marks: 0,
-          maxMarks: 10,
-        })),
-        feedback: parsedTranscript.questions.map((_, idx) => ({
-          questionNumber: idx + 1,
-          feedback: "Evaluation failed - please review manually",
-        })),
-        totalMarks: 0,
-        maxTotalMarks: parsedTranscript.questions.length * 10,
-        percentage: 0,
-        overallFeedback: "Evaluation encountered an error.",
+        marks: [], feedback: [], totalMarks: 0, maxTotalMarks: 0, percentage: 0,
+        overallFeedback: "No Q&A pairs could be extracted from the transcript.",
       };
+    } else {
+      try {
+        evaluation = await evaluateViva(parsedTranscript.questions, subject);
+      } catch {
+        evaluation = {
+          marks: parsedTranscript.questions.map((qa: any, idx: number) => ({
+            questionNumber: idx + 1, question: qa.question, answer: qa.answer, marks: 0, maxMarks: 10,
+          })),
+          feedback: parsedTranscript.questions.map((_: any, idx: number) => ({
+            questionNumber: idx + 1, feedback: "Evaluation failed - please review manually",
+          })),
+          totalMarks: 0, maxTotalMarks: parsedTranscript.questions.length * 10, percentage: 0,
+          overallFeedback: "Evaluation encountered an error.",
+        };
+      }
     }
   }
 
@@ -165,7 +194,7 @@ async function processCall(call: any): Promise<{
   const recordingUrl =
     call.recordingUrl || artifact?.recordingUrl || "";
 
-  let teacherEmail = metadata.teacherEmail || variableValues.teacherEmail || "";
+  let teacherEmail = vapiTeacherEmail || metadata.teacherEmail || variableValues.teacherEmail || "";
   if (!teacherEmail && subject) {
     teacherEmail = await lookupTeacherEmail(subject);
   }

@@ -8,7 +8,6 @@ import { verifyVapiWebhookSignature } from "@/lib/utils/webhook-signature";
 import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
 
-// Vapi webhook payload types - they send different message types
 interface VapiWebhookMessage {
   message?: {
     type?: string;
@@ -17,14 +16,17 @@ interface VapiWebhookMessage {
     summary?: string;
     endedReason?: string;
     metadata?: Record<string, any>;
-    // For end-of-call-report
+    analysis?: {
+      summary?: string;
+      structuredData?: Record<string, any>;
+      successEvaluation?: any;
+    };
     artifact?: {
       transcript?: string;
       messages?: any[];
       recordingUrl?: string;
     };
   };
-  // Direct call object for some event types
   call?: any;
 }
 
@@ -170,13 +172,15 @@ export async function POST(request: Request) {
     const callId = call.id || `unknown-${Date.now()}`;
     console.log(`[Viva Complete] Processing call ${callId}`);
 
-    // Log full call object to debug metadata location
     console.log("[Viva Complete] Full call object keys:", Object.keys(call));
     console.log("[Viva Complete] call.metadata:", JSON.stringify(call.metadata, null, 2));
     console.log("[Viva Complete] call.assistantOverrides:", JSON.stringify(call.assistantOverrides, null, 2));
 
-    // Extract metadata - Vapi may put it in different places
-    // Try multiple locations where Vapi might store metadata
+    const vapiAnalysis = body.message?.analysis;
+    const vapiStructuredData = vapiAnalysis?.structuredData || {};
+    console.log("[Viva Complete] VAPI analysis:", JSON.stringify(vapiAnalysis, null, 2));
+    console.log("[Viva Complete] VAPI structuredData:", JSON.stringify(vapiStructuredData, null, 2));
+
     const metadata =
       call.metadata ||
       call.assistantOverrides?.metadata ||
@@ -184,7 +188,6 @@ export async function POST(request: Request) {
       body.message?.metadata ||
       {};
 
-    // Also check assistantOverrides.variableValues as fallback
     const variableValues = call.assistantOverrides?.variableValues || {};
 
     console.log("[Viva Complete] Extracted metadata:", JSON.stringify(metadata, null, 2));
@@ -295,82 +298,84 @@ export async function POST(request: Request) {
       }
     }
 
-    // Parse transcript into Q&A pairs
-    console.log("[Viva Complete] Parsing transcript into Q&A pairs...");
-    const parsedTranscript = parseTranscript(transcript);
-    console.log(
-      `[Viva Complete] Found ${parsedTranscript.questions.length} Q&A pairs from transcript`
-    );
-    
-    // Log each Q&A pair for verification
-    if (parsedTranscript.questions.length > 0) {
-      parsedTranscript.questions.forEach((qa, idx) => {
-        console.log(`[Viva Complete] Q${idx + 1}: "${qa.question.substring(0, 100)}..."`);
-        console.log(`[Viva Complete] A${idx + 1}: "${qa.answer.substring(0, 100)}..."`);
-      });
-    } else {
-      console.warn("[Viva Complete] WARNING: No Q&A pairs extracted from transcript!");
-      console.warn("[Viva Complete] This means evaluation cannot proceed accurately.");
-      console.warn("[Viva Complete] Transcript content:", transcript.substring(0, 1000));
-    }
+    // PRIORITY: Use evaluation data from VAPI's structuredData if available
+    // VAPI sends evaluation, teacher email, and marks breakdown in message.analysis.structuredData
+    let evaluation: any;
+    let vapiProvidedEvaluation = false;
 
-    // Evaluate viva based ONLY on transcript Q&A pairs
-    // This ensures evaluation is based on what was actually transcribed, not audio
-    console.log("[Viva Complete] Evaluating viva based on transcript Q&A pairs...");
-    
-    let evaluation;
-    if (parsedTranscript.questions.length === 0) {
-      console.warn("[Viva Complete] WARNING: No Q&A pairs found in transcript - creating empty evaluation");
-      console.warn("[Viva Complete] Will still save transcript to sheets for review");
-      
-      // Create a minimal evaluation so we can still save the data
+    const vapiEvaluation = vapiStructuredData.evaluation || vapiStructuredData.evaluationJson || vapiStructuredData.evaluation_json;
+    const vapiMarksBreakdown = vapiStructuredData.marks_breakdown || vapiStructuredData.marksBreakdown || vapiStructuredData.marks;
+    const vapiTeacherEmail = vapiStructuredData.teacher_email || vapiStructuredData.teacherEmail;
+
+    if (vapiEvaluation || vapiMarksBreakdown) {
+      console.log("[Viva Complete] Found evaluation data from VAPI structuredData");
+      vapiProvidedEvaluation = true;
+
+      let parsedVapiEval: any = {};
+      if (typeof vapiEvaluation === "string") {
+        try { parsedVapiEval = JSON.parse(vapiEvaluation); } catch { parsedVapiEval = vapiEvaluation; }
+      } else if (vapiEvaluation && typeof vapiEvaluation === "object") {
+        parsedVapiEval = vapiEvaluation;
+      }
+
+      const marks = vapiMarksBreakdown || parsedVapiEval.marks || parsedVapiEval.marks_breakdown || [];
+      const parsedMarks = typeof marks === "string" ? (() => { try { return JSON.parse(marks); } catch { return []; } })() : marks;
+
       evaluation = {
-        marks: [],
-        feedback: [],
-        totalMarks: 0,
-        maxTotalMarks: 0,
-        percentage: 0,
-        overallFeedback: "No Q&A pairs could be extracted from the transcript. Please review the transcript manually.",
+        marks: Array.isArray(parsedMarks) ? parsedMarks : [],
+        feedback: parsedVapiEval.feedback || [],
+        totalMarks: parsedVapiEval.totalMarks ?? parsedVapiEval.total_marks ?? parsedVapiEval.score ?? 0,
+        maxTotalMarks: parsedVapiEval.maxTotalMarks ?? parsedVapiEval.max_total_marks ?? parsedVapiEval.maxMarks ?? 0,
+        percentage: parsedVapiEval.percentage ?? 0,
+        overallFeedback: parsedVapiEval.overallFeedback ?? parsedVapiEval.overall_feedback ?? parsedVapiEval.summary ?? vapiAnalysis?.summary ?? "",
       };
+
+      if (evaluation.maxTotalMarks === 0 && Array.isArray(evaluation.marks) && evaluation.marks.length > 0) {
+        evaluation.maxTotalMarks = evaluation.marks.reduce((sum: number, m: any) => sum + (m.maxMarks || m.max_marks || 10), 0);
+      }
+      if (evaluation.totalMarks === 0 && Array.isArray(evaluation.marks) && evaluation.marks.length > 0) {
+        evaluation.totalMarks = evaluation.marks.reduce((sum: number, m: any) => sum + (m.marks || m.score || 0), 0);
+      }
+      if (evaluation.percentage === 0 && evaluation.maxTotalMarks > 0) {
+        evaluation.percentage = Math.round((evaluation.totalMarks / evaluation.maxTotalMarks) * 100);
+      }
+
+      console.log(`[Viva Complete] VAPI evaluation: ${evaluation.totalMarks}/${evaluation.maxTotalMarks} (${evaluation.percentage}%)`);
+      console.log(`[Viva Complete] VAPI marks breakdown: ${evaluation.marks.length} items`);
     } else {
-      try {
-        evaluation = await evaluateViva(
-          parsedTranscript.questions,
-          subject
-        );
-        console.log(
-          `[Viva Complete] ✓ Evaluation complete: ${evaluation.totalMarks}/${evaluation.maxTotalMarks} (${evaluation.percentage}%)`
-        );
-        console.log(`[Viva Complete] Evaluation details:`, {
-          questionsEvaluated: evaluation.marks.length,
-          totalMarks: evaluation.totalMarks,
-          maxTotalMarks: evaluation.maxTotalMarks,
-          percentage: evaluation.percentage,
-          hasFeedback: evaluation.feedback.length > 0,
-          overallFeedbackLength: evaluation.overallFeedback.length,
-        });
-      } catch (evalError) {
-        console.error("[Viva Complete] ERROR: Evaluation failed:", evalError);
-        console.error("[Viva Complete] Will still save transcript to sheets with error evaluation");
-        
-        // Create error evaluation so we can still save the data
+      console.log("[Viva Complete] No evaluation from VAPI structuredData, falling back to local evaluation");
+
+      const parsedTranscript = parseTranscript(transcript);
+      console.log(`[Viva Complete] Found ${parsedTranscript.questions.length} Q&A pairs from transcript`);
+
+      if (parsedTranscript.questions.length === 0) {
         evaluation = {
-          marks: parsedTranscript.questions.map((qa, idx) => ({
-            questionNumber: idx + 1,
-            question: qa.question,
-            answer: qa.answer,
-            marks: 0,
-            maxMarks: 10,
-          })),
-          feedback: parsedTranscript.questions.map((qa, idx) => ({
-            questionNumber: idx + 1,
-            feedback: "Evaluation failed - please review manually",
-          })),
+          marks: [],
+          feedback: [],
           totalMarks: 0,
-          maxTotalMarks: parsedTranscript.questions.length * 10,
+          maxTotalMarks: 0,
           percentage: 0,
-          overallFeedback: `Evaluation encountered an error: ${evalError instanceof Error ? evalError.message : "Unknown error"}. Please review the transcript manually.`,
+          overallFeedback: "No Q&A pairs could be extracted from the transcript. Please review the transcript manually.",
         };
+      } else {
+        try {
+          evaluation = await evaluateViva(parsedTranscript.questions, subject);
+          console.log(`[Viva Complete] Local evaluation: ${evaluation.totalMarks}/${evaluation.maxTotalMarks} (${evaluation.percentage}%)`);
+        } catch (evalError) {
+          console.error("[Viva Complete] Local evaluation failed:", evalError);
+          evaluation = {
+            marks: parsedTranscript.questions.map((qa: any, idx: number) => ({
+              questionNumber: idx + 1, question: qa.question, answer: qa.answer, marks: 0, maxMarks: 10,
+            })),
+            feedback: parsedTranscript.questions.map((_: any, idx: number) => ({
+              questionNumber: idx + 1, feedback: "Evaluation failed - please review manually",
+            })),
+            totalMarks: 0,
+            maxTotalMarks: parsedTranscript.questions.length * 10,
+            percentage: 0,
+            overallFeedback: `Evaluation error: ${evalError instanceof Error ? evalError.message : "Unknown error"}`,
+          };
+        }
       }
     }
 
@@ -408,10 +413,11 @@ export async function POST(request: Request) {
       // Don't fail if file save fails
     }
 
-    let teacherEmail = metadata.teacherEmail || variableValues.teacherEmail || "";
+    let teacherEmail = vapiTeacherEmail || metadata.teacherEmail || variableValues.teacherEmail || "";
     if (!teacherEmail && subject) {
       teacherEmail = await lookupTeacherEmail(subject);
     }
+    console.log("[Viva Complete] Teacher email resolved:", teacherEmail, vapiProvidedEvaluation ? "(from VAPI)" : "(from metadata/lookup)");
 
     const marksBreakdownJson = evaluation.marks?.length > 0
       ? JSON.stringify(evaluation.marks)
