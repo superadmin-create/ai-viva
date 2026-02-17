@@ -44,7 +44,15 @@ Required (see .env.example):
 - Both the `/api/viva-complete` webhook and `/api/sync-results` endpoint save to both Google Sheets and the admin database
 - The admin database uses `vapi_call_id` as a deduplication key
 
+## VAPI Webhook Data Flow
+- VAPI sends evaluation data in `message.analysis.structuredData` (evaluation JSON, teacher_email, marks_breakdown)
+- Both `/api/viva-complete` and `/api/sync-results` prioritize VAPI's structured data over local evaluation
+- Falls back to local transcript parsing + evaluation if VAPI doesn't provide structured data
+- Google Sheets columns: timestamp, callId, studentEmail, studentName, subject, topics, duration, totalMarks, maxTotalMarks, percentage, transcript, recordingUrl, evaluation, teacherEmail, marksBreakdown (A:O)
+
 ## Recent Changes
+- February 17, 2026: Updated both endpoints to extract evaluation, teacher_email, marks_breakdown from VAPI's analysis.structuredData
+- February 17, 2026: Added teacher_email and marks_breakdown columns to Google Sheets (columns N, O)
 - February 2026: Added dual persistence to admin PostgreSQL database (lib/utils/admin-db.ts)
 - February 2026: Updated sync-results and viva-complete endpoints to save to admin DB
 - January 2026: Configured for Replit environment (port 5000, allowedDevOrigins)
