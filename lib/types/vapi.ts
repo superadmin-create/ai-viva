@@ -76,5 +76,7 @@ export interface VivaSheetRow {
   percentage: number;
   transcript: string;
   recordingUrl?: string;
-  evaluation: string; // JSON stringified evaluation
+  evaluation: string;
+  teacherEmail?: string;
+  marksBreakdown?: string;
 }

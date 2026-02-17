@@ -162,7 +162,7 @@ async function ensureHeaders(
     try {
       const response = await sheets.spreadsheets.values.get({
         spreadsheetId: sheetId,
-        range: `'${SHEET_NAME}'!A1:K1`,
+        range: `'${SHEET_NAME}'!A1:M1`,
       });
       firstRow = response.data.values?.[0];
     } catch (e: any) {
@@ -183,11 +183,13 @@ async function ensureHeaders(
         "Transcript",
         "Recording",
         "Evaluation (JSON)",
+        "Teacher Email",
+        "Marks Breakdown",
       ];
 
       await sheets.spreadsheets.values.update({
         spreadsheetId: sheetId,
-        range: `'${SHEET_NAME}'!A1:K1`,
+        range: `'${SHEET_NAME}'!A1:M1`,
         valueInputOption: "RAW",
         requestBody: {
           values: [headers],
@@ -211,7 +213,7 @@ async function callIdExists(
   try {
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: sheetId,
-      range: `'${SHEET_NAME}'!A:K`,
+      range: `'${SHEET_NAME}'!A:M`,
     });
 
     const rows = response.data.values || [];
@@ -330,13 +332,15 @@ export async function saveToSheets(
       truncatedTranscript,
       row.recordingUrl || "-",
       evaluationJson,
+      row.teacherEmail || "",
+      row.marksBreakdown || "",
     ];
 
     console.log("[Sheets] Appending row to sheet...");
     
     const response = await sheets.spreadsheets.values.append({
       spreadsheetId: sheetId,
-      range: `'${SHEET_NAME}'!A:K`,
+      range: `'${SHEET_NAME}'!A:M`,
       valueInputOption: "RAW",
       insertDataOption: "INSERT_ROWS",
       requestBody: {

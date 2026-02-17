@@ -165,6 +165,15 @@ async function processCall(call: any): Promise<{
   const recordingUrl =
     call.recordingUrl || artifact?.recordingUrl || "";
 
+  let teacherEmail = metadata.teacherEmail || variableValues.teacherEmail || "";
+  if (!teacherEmail && subject) {
+    teacherEmail = await lookupTeacherEmail(subject);
+  }
+
+  const marksBreakdownJson = evaluation.marks?.length > 0
+    ? JSON.stringify(evaluation.marks)
+    : "";
+
   const sheetRow: VivaSheetRow = {
     timestamp,
     callId,
@@ -179,6 +188,8 @@ async function processCall(call: any): Promise<{
     transcript: transcript.substring(0, 50000),
     recordingUrl,
     evaluation: evaluationJson,
+    teacherEmail,
+    marksBreakdown: marksBreakdownJson,
   };
 
   const sheetsResult = await saveToSheets(sheetRow);
@@ -188,11 +199,6 @@ async function processCall(call: any): Promise<{
     evaluationObj = typeof sheetRow.evaluation === "string" ? JSON.parse(sheetRow.evaluation) : sheetRow.evaluation;
   } catch {
     evaluationObj = {};
-  }
-
-  let teacherEmail = metadata.teacherEmail || variableValues.teacherEmail || "";
-  if (!teacherEmail && subject) {
-    teacherEmail = await lookupTeacherEmail(subject);
   }
 
   const adminDbResult = await saveToAdminDb({

@@ -408,6 +408,15 @@ export async function POST(request: Request) {
       // Don't fail if file save fails
     }
 
+    let teacherEmail = metadata.teacherEmail || variableValues.teacherEmail || "";
+    if (!teacherEmail && subject) {
+      teacherEmail = await lookupTeacherEmail(subject);
+    }
+
+    const marksBreakdownJson = evaluation.marks?.length > 0
+      ? JSON.stringify(evaluation.marks)
+      : "";
+
     const sheetRow: VivaSheetRow = {
       timestamp,
       callId: callId,
@@ -419,9 +428,11 @@ export async function POST(request: Request) {
       totalMarks: evaluation.totalMarks,
       maxTotalMarks: evaluation.maxTotalMarks,
       percentage: evaluation.percentage,
-      transcript: transcript.substring(0, 50000), // Limit transcript length for sheets
+      transcript: transcript.substring(0, 50000),
       recordingUrl: recordingUrl,
       evaluation: evaluationJson,
+      teacherEmail,
+      marksBreakdown: marksBreakdownJson,
     };
     
     // Validate sheet row has all required data
@@ -528,11 +539,6 @@ export async function POST(request: Request) {
         evaluationObj = typeof evaluationJson === "string" ? JSON.parse(evaluationJson) : evaluation;
       } catch {
         evaluationObj = evaluation;
-      }
-
-      let teacherEmail = metadata.teacherEmail || variableValues.teacherEmail || "";
-      if (!teacherEmail && subject) {
-        teacherEmail = await lookupTeacherEmail(subject);
       }
 
       const adminDbResult = await saveToAdminDb({
