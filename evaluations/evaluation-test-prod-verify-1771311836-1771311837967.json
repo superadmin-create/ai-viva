@@ -1,0 +1,24 @@
+{
+  "marks": [
+    {
+      "questionNumber": 1,
+      "question": "Question 1: What is technical analysis?",
+      "answer": "Technical analysis is the study of price movements using charts and indicators to predict future price direction.",
+      "marks": 6,
+      "maxMarks": 10
+    }
+  ],
+  "feedback": [
+    {
+      "questionNumber": 1,
+      "feedback": "Basic understanding demonstrated but missing important details. Elaborate with examples and connections.",
+      "strengths": [
+        "Provided a response"
+      ]
+    }
+  ],
+  "totalMarks": 6,
+  "maxTotalMarks": 10,
+  "percentage": 60,
+  "overallFeedback": "Good performance! You demonstrated solid understanding of the core concepts and answered 1 questions. Your responses showed that you have a foundation in the subject, but there's room to provide more detailed explanations and examples. Focus on elaborating your answers with specific examples, real-world applications, and connecting related concepts to strengthen your understanding further."
+}
