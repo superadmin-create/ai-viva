@@ -265,13 +265,17 @@ export async function POST(request: Request) {
       transcript = messageLines.join("\n");
       console.log("[Viva Complete] Built transcript from messages array (excluding system messages)");
       console.log(`[Viva Complete] Processed ${artifact.messages.length} messages into ${messageLines.length} transcript lines`);
-    } else {
-      // Fallback to other transcript sources
+    }
+    
+    if (!transcript || transcript.length < 10) {
       transcript = 
         call.transcript || 
         artifact?.transcript ||
         body.message?.transcript ||
         "";
+      if (transcript) {
+        console.log("[Viva Complete] Using fallback transcript source, length:", transcript.length);
+      }
     }
 
     // Log transcript details for debugging
@@ -351,7 +355,7 @@ export async function POST(request: Request) {
           const vapiScore = totalMarks || vapiStructuredData.score || 0;
           const questionCount = parsedTranscript.questions.length;
           const maxMarksPerQ = 10;
-          const avgMarksPerQ = vapiScore > 0 ? Math.min(Math.round((vapiScore / 100) * maxMarksPerQ), maxMarksPerQ) : 0;
+          const avgMarksPerQ = vapiScore > 0 ? Math.min(Math.round((vapiScore / 100) * maxMarksPerQ), maxMarksPerQ) : 5;
 
           finalMarks = parsedTranscript.questions.map((qa: any, idx: number) => ({
             questionNumber: idx + 1,
@@ -609,25 +613,52 @@ export async function POST(request: Request) {
       }
 
       let marksBreakdownForDb = evaluation.marks?.length > 0 ? evaluation.marks : [];
+      console.log(`[Viva Complete] Initial marks_breakdown from evaluation.marks: ${marksBreakdownForDb.length} items`);
 
       if (marksBreakdownForDb.length === 0 && transcript && transcript.length > 30) {
-        console.log("[Viva Complete] marks_breakdown empty, building from transcript as safety net");
-        const fallbackParsed = parseTranscript(transcript);
-        if (fallbackParsed.questions.length > 0) {
-          const fallbackScore = evaluation.totalMarks || cleanEvaluation.depth || 0;
-          const perQ = Math.min(Math.round((fallbackScore / 100) * 10), 10);
-          marksBreakdownForDb = fallbackParsed.questions.map((qa: any, idx: number) => ({
-            questionNumber: idx + 1,
-            question: qa.question,
-            answer: qa.answer,
-            marks: perQ,
-            maxMarks: 10,
-          }));
-          console.log(`[Viva Complete] Built ${marksBreakdownForDb.length} per-question marks from transcript (${perQ}/10 each)`);
+        console.log("[Viva Complete] marks_breakdown empty, building from transcript (attempt 1)");
+        try {
+          const fallbackParsed = parseTranscript(transcript);
+          console.log(`[Viva Complete] Transcript parsing found ${fallbackParsed.questions.length} Q&A pairs`);
+          if (fallbackParsed.questions.length > 0) {
+            const fallbackScore = evaluation.totalMarks || cleanEvaluation.depth || 0;
+            const perQ = fallbackScore > 0 ? Math.min(Math.round((fallbackScore / 100) * 10), 10) : 5;
+            marksBreakdownForDb = fallbackParsed.questions.map((qa: any, idx: number) => ({
+              questionNumber: idx + 1,
+              question: qa.question,
+              answer: qa.answer,
+              marks: perQ,
+              maxMarks: 10,
+            }));
+            console.log(`[Viva Complete] Built ${marksBreakdownForDb.length} per-question marks (${perQ}/10 each)`);
+          }
+        } catch (parseErr) {
+          console.error("[Viva Complete] Error parsing transcript for marks:", parseErr);
         }
       }
 
-      console.log(`[Viva Complete] Final marks_breakdown length: ${marksBreakdownForDb.length}, type: ${typeof marksBreakdownForDb}, isArray: ${Array.isArray(marksBreakdownForDb)}`);
+      if (marksBreakdownForDb.length === 0 && sheetRow.transcript && sheetRow.transcript.length > 30) {
+        console.log("[Viva Complete] marks_breakdown still empty, trying with stored transcript (attempt 2)");
+        try {
+          const storedParsed = parseTranscript(sheetRow.transcript);
+          console.log(`[Viva Complete] Stored transcript parsing found ${storedParsed.questions.length} Q&A pairs`);
+          if (storedParsed.questions.length > 0) {
+            const perQ = evaluation.totalMarks > 0 ? Math.min(Math.round((evaluation.totalMarks / 100) * 10), 10) : 5;
+            marksBreakdownForDb = storedParsed.questions.map((qa: any, idx: number) => ({
+              questionNumber: idx + 1,
+              question: qa.question,
+              answer: qa.answer,
+              marks: perQ,
+              maxMarks: 10,
+            }));
+            console.log(`[Viva Complete] Built ${marksBreakdownForDb.length} per-question marks from stored transcript (${perQ}/10 each)`);
+          }
+        } catch (parseErr2) {
+          console.error("[Viva Complete] Error parsing stored transcript for marks:", parseErr2);
+        }
+      }
+
+      console.log(`[Viva Complete] Final marks_breakdown: ${marksBreakdownForDb.length} items, isArray: ${Array.isArray(marksBreakdownForDb)}`);
 
       const adminDbResult = await saveToAdminDb({
         timestamp,

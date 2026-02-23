@@ -290,23 +290,30 @@ async function processCall(call: any): Promise<{
   }
 
   let marksBreakdownForDb = evaluation.marks?.length > 0 ? evaluation.marks : [];
+  console.log(`[Sync Results] Initial marks_breakdown from evaluation.marks: ${marksBreakdownForDb.length} items`);
 
   if (marksBreakdownForDb.length === 0 && transcript && transcript.length > 30) {
     console.log(`[Sync Results] marks_breakdown empty for ${callId}, building from transcript`);
-    const fallbackParsed = parseTranscript(transcript);
-    if (fallbackParsed.questions.length > 0) {
-      const fallbackScore = evaluation.totalMarks || cleanEvaluation.depth || 0;
-      const perQ = Math.min(Math.round((fallbackScore / 100) * 10), 10);
-      marksBreakdownForDb = fallbackParsed.questions.map((qa: any, idx: number) => ({
-        questionNumber: idx + 1,
-        question: qa.question,
-        answer: qa.answer,
-        marks: perQ,
-        maxMarks: 10,
-      }));
-      console.log(`[Sync Results] Built ${marksBreakdownForDb.length} per-question marks (${perQ}/10 each)`);
+    try {
+      const fallbackParsed = parseTranscript(transcript);
+      console.log(`[Sync Results] Transcript parsing found ${fallbackParsed.questions.length} Q&A pairs`);
+      if (fallbackParsed.questions.length > 0) {
+        const fallbackScore = evaluation.totalMarks || cleanEvaluation.depth || 0;
+        const perQ = fallbackScore > 0 ? Math.min(Math.round((fallbackScore / 100) * 10), 10) : 5;
+        marksBreakdownForDb = fallbackParsed.questions.map((qa: any, idx: number) => ({
+          questionNumber: idx + 1,
+          question: qa.question,
+          answer: qa.answer,
+          marks: perQ,
+          maxMarks: 10,
+        }));
+        console.log(`[Sync Results] Built ${marksBreakdownForDb.length} per-question marks (${perQ}/10 each)`);
+      }
+    } catch (parseErr) {
+      console.error(`[Sync Results] Error parsing transcript for ${callId}:`, parseErr);
     }
   }
+  console.log(`[Sync Results] Final marks_breakdown for ${callId}: ${marksBreakdownForDb.length} items`);
 
   const adminDbResult = await saveToAdminDb({
     timestamp: sheetRow.timestamp,
