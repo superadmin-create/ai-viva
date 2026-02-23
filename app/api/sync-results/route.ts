@@ -7,6 +7,16 @@ import { saveToAdminDb, lookupTeacherEmail } from "@/lib/utils/admin-db";
 
 const VAPI_API_BASE = "https://api.vapi.ai";
 
+function generateQuestionFeedback(answer: string, marks: number): string {
+  const answerLen = (answer || "").trim().length;
+  if (answerLen < 10) return "No substantial answer provided.";
+  if (marks >= 9) return "Excellent answer demonstrating thorough understanding and clear articulation.";
+  if (marks >= 7) return "Good answer with solid understanding; could benefit from more detailed examples.";
+  if (marks >= 5) return "Adequate answer covering key points; more depth and clarity would strengthen the response.";
+  if (marks >= 3) return "Partial answer with some relevant points; needs more comprehensive coverage of the topic.";
+  return "Minimal response; further study and preparation on this topic is recommended.";
+}
+
 function getVapiKey(): string {
   let key = process.env.VAPI_PRIVATE_KEY || "";
   if (key.includes("=")) {
@@ -306,11 +316,17 @@ async function processCall(call: any): Promise<{
           answer: qa.answer,
           marks: perQ,
           maxMarks: 10,
+          feedback: generateQuestionFeedback(qa.answer, perQ),
         }));
-        console.log(`[Sync Results] Built ${marksBreakdownForDb.length} per-question marks (${perQ}/10 each)`);
+        console.log(`[Sync Results] Built ${marksBreakdownForDb.length} per-question marks with feedback (${perQ}/10 each)`);
       }
     } catch (parseErr) {
       console.error(`[Sync Results] Error parsing transcript for ${callId}:`, parseErr);
+    }
+  }
+  for (const item of marksBreakdownForDb) {
+    if (!item.feedback) {
+      item.feedback = generateQuestionFeedback(item.answer, item.marks);
     }
   }
   console.log(`[Sync Results] Final marks_breakdown for ${callId}: ${marksBreakdownForDb.length} items`);

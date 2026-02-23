@@ -8,6 +8,16 @@ import { verifyVapiWebhookSignature } from "@/lib/utils/webhook-signature";
 import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
 
+function generateQuestionFeedback(answer: string, marks: number): string {
+  const answerLen = (answer || "").trim().length;
+  if (answerLen < 10) return "No substantial answer provided.";
+  if (marks >= 9) return "Excellent answer demonstrating thorough understanding and clear articulation.";
+  if (marks >= 7) return "Good answer with solid understanding; could benefit from more detailed examples.";
+  if (marks >= 5) return "Adequate answer covering key points; more depth and clarity would strengthen the response.";
+  if (marks >= 3) return "Partial answer with some relevant points; needs more comprehensive coverage of the topic.";
+  return "Minimal response; further study and preparation on this topic is recommended.";
+}
+
 interface VapiWebhookMessage {
   message?: {
     type?: string;
@@ -629,8 +639,9 @@ export async function POST(request: Request) {
               answer: qa.answer,
               marks: perQ,
               maxMarks: 10,
+              feedback: generateQuestionFeedback(qa.answer, perQ),
             }));
-            console.log(`[Viva Complete] Built ${marksBreakdownForDb.length} per-question marks (${perQ}/10 each)`);
+            console.log(`[Viva Complete] Built ${marksBreakdownForDb.length} per-question marks with feedback (${perQ}/10 each)`);
           }
         } catch (parseErr) {
           console.error("[Viva Complete] Error parsing transcript for marks:", parseErr);
@@ -650,11 +661,18 @@ export async function POST(request: Request) {
               answer: qa.answer,
               marks: perQ,
               maxMarks: 10,
+              feedback: generateQuestionFeedback(qa.answer, perQ),
             }));
-            console.log(`[Viva Complete] Built ${marksBreakdownForDb.length} per-question marks from stored transcript (${perQ}/10 each)`);
+            console.log(`[Viva Complete] Built ${marksBreakdownForDb.length} per-question marks with feedback from stored transcript (${perQ}/10 each)`);
           }
         } catch (parseErr2) {
           console.error("[Viva Complete] Error parsing stored transcript for marks:", parseErr2);
+        }
+      }
+
+      for (const item of marksBreakdownForDb) {
+        if (!item.feedback) {
+          item.feedback = generateQuestionFeedback(item.answer, item.marks);
         }
       }
 
