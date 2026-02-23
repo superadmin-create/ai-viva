@@ -93,14 +93,35 @@ export async function saveToAdminDb(data: VivaResultRow): Promise<{ success: boo
         student_email = EXCLUDED.student_email,
         subject = EXCLUDED.subject,
         topics = EXCLUDED.topics,
-        questions_answered = EXCLUDED.questions_answered,
-        score = EXCLUDED.score,
-        overall_feedback = EXCLUDED.overall_feedback,
-        transcript = EXCLUDED.transcript,
-        recording_url = EXCLUDED.recording_url,
+        questions_answered = CASE 
+          WHEN EXCLUDED.questions_answered > 0 THEN EXCLUDED.questions_answered
+          ELSE COALESCE(viva_results.questions_answered, EXCLUDED.questions_answered)
+        END,
+        score = CASE
+          WHEN EXCLUDED.score > 0 THEN EXCLUDED.score
+          ELSE COALESCE(viva_results.score, EXCLUDED.score)
+        END,
+        overall_feedback = CASE
+          WHEN LENGTH(EXCLUDED.overall_feedback) > 0 THEN EXCLUDED.overall_feedback
+          ELSE COALESCE(viva_results.overall_feedback, EXCLUDED.overall_feedback)
+        END,
+        transcript = CASE
+          WHEN LENGTH(EXCLUDED.transcript) > LENGTH(COALESCE(viva_results.transcript, '')) THEN EXCLUDED.transcript
+          ELSE COALESCE(viva_results.transcript, EXCLUDED.transcript)
+        END,
+        recording_url = CASE
+          WHEN LENGTH(EXCLUDED.recording_url) > 0 THEN EXCLUDED.recording_url
+          ELSE COALESCE(viva_results.recording_url, EXCLUDED.recording_url)
+        END,
         evaluation = EXCLUDED.evaluation,
-        teacher_email = EXCLUDED.teacher_email,
-        marks_breakdown = EXCLUDED.marks_breakdown`,
+        teacher_email = CASE
+          WHEN LENGTH(EXCLUDED.teacher_email) > 0 AND EXCLUDED.teacher_email != 'unknown@example.com' THEN EXCLUDED.teacher_email
+          ELSE COALESCE(viva_results.teacher_email, EXCLUDED.teacher_email)
+        END,
+        marks_breakdown = CASE
+          WHEN jsonb_typeof(EXCLUDED.marks_breakdown) = 'array' AND jsonb_array_length(EXCLUDED.marks_breakdown) > 0 THEN EXCLUDED.marks_breakdown
+          ELSE COALESCE(viva_results.marks_breakdown, EXCLUDED.marks_breakdown)
+        END`,
       [
         data.timestamp,
         data.student_name,
