@@ -1,0 +1,42 @@
+{
+  "marks": [
+    {
+      "questionNumber": 1,
+      "question": "Welcome. Let me ask you the first question. What is machine learning and how does it diff from traditional programming?",
+      "answer": "Machine learning is where comput learns from data instead of being explicitly programmed with rules.",
+      "marks": 8,
+      "maxMarks": 10
+    },
+    {
+      "questionNumber": 2,
+      "question": "Good answer. Next question. Can you describe what a confusion matrix is and how it is used in evaluating a machine learning model?",
+      "answer": "Sorry. I dont know the answ to this.",
+      "marks": 8,
+      "maxMarks": 10
+    },
+    {
+      "questionNumber": 3,
+      "question": "Thats okay. Lets move to the next question. What is the purpose of feature selection in machine learning?",
+      "answer": "Feature selection helps you pick which features to include in the model and which ones to leave out to improve performance.",
+      "marks": 8,
+      "maxMarks": 10
+    }
+  ],
+  "feedback": [],
+  "totalMarks": 75,
+  "maxTotalMarks": 30,
+  "percentage": 250,
+  "overallFeedback": "Good performance",
+  "vapiRawEvaluation": {
+    "depth": 70,
+    "clarity": 80,
+    "knowledge": 75,
+    "score": 75,
+    "strengths": [
+      "Good understanding"
+    ],
+    "improvements": [
+      "More examples needed"
+    ]
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "marks": [
+    {
+      "questionNumber": 1,
+      "question": "What is machine learning?",
+      "answer": "ML is learning from data.",
+      "marks": 8,
+      "maxMarks": 10
+    },
+    {
+      "questionNumber": 2,
+      "question": "What is a confusion matrix?",
+      "answer": "I dont know.",
+      "marks": 8,
+      "maxMarks": 10
+    },
+    {
+      "questionNumber": 3,
+      "question": "What is feature selection?",
+      "answer": "Choosing the best features for the model.",
+      "marks": 8,
+      "maxMarks": 10
+    }
+  ],
+  "feedback": [],
+  "totalMarks": 24,
+  "maxTotalMarks": 30,
+  "percentage": 80,
+  "overallFeedback": "Good",
+  "vapiRawEvaluation": {
+    "depth": 70,
+    "clarity": 80,
+    "knowledge": 75,
+    "score": 75,
+    "strengths": [
+      "Good"
+    ],
+    "improvements": [
+      "More"
+    ]
+  }
+}

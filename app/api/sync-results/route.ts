@@ -157,24 +157,47 @@ async function processCall(call: any): Promise<{
     const strengths = parsedVapiEval.strengths || vapiStructuredData.strengths || [];
     const improvements = parsedVapiEval.improvements || vapiStructuredData.improvements || [];
 
+    let finalMarks = parsedMarks;
+
+    if (finalMarks.length === 0 && transcript) {
+      const parsedTranscript = parseTranscript(transcript);
+      if (parsedTranscript.questions.length > 0) {
+        const vapiScore = totalMarks || vapiStructuredData.score || 0;
+        const maxMarksPerQ = 10;
+        const avgMarksPerQ = vapiScore > 0 ? Math.min(Math.round((vapiScore / 100) * maxMarksPerQ), maxMarksPerQ) : 0;
+
+        finalMarks = parsedTranscript.questions.map((qa: any, idx: number) => ({
+          questionNumber: idx + 1,
+          question: qa.question,
+          answer: qa.answer,
+          marks: avgMarksPerQ,
+          maxMarks: maxMarksPerQ,
+        }));
+
+        console.log(`[Sync Results] Built per-question marks from transcript: ${finalMarks.length} questions, ${avgMarksPerQ}/${maxMarksPerQ} each`);
+      }
+    }
+
+    const computedOverallFeedback = typeof overallFeedback === "string" ? overallFeedback :
+      (Array.isArray(strengths) && strengths.length > 0
+        ? `Strengths: ${strengths.join(", ")}. Improvements: ${improvements.join(", ")}`
+        : JSON.stringify(overallFeedback));
+
     evaluation = {
-      marks: parsedMarks,
+      marks: finalMarks,
       feedback: parsedVapiEval.feedback || [],
       totalMarks,
       maxTotalMarks,
       percentage,
-      overallFeedback: typeof overallFeedback === "string" ? overallFeedback :
-        (Array.isArray(strengths) && strengths.length > 0
-          ? `Strengths: ${strengths.join(", ")}. Improvements: ${improvements.join(", ")}`
-          : JSON.stringify(overallFeedback)),
+      overallFeedback: computedOverallFeedback,
       vapiRawEvaluation: vapiStructuredData,
     };
 
-    if (evaluation.maxTotalMarks === 0 && parsedMarks.length > 0) {
-      evaluation.maxTotalMarks = parsedMarks.reduce((sum: number, m: any) => sum + (m.maxMarks || m.max_marks || 10), 0);
-    }
-    if (evaluation.totalMarks === 0 && parsedMarks.length > 0) {
-      evaluation.totalMarks = parsedMarks.reduce((sum: number, m: any) => sum + (m.marks || m.score || 0), 0);
+    if (finalMarks.length > 0) {
+      evaluation.maxTotalMarks = finalMarks.reduce((sum: number, m: any) => sum + (m.maxMarks || m.max_marks || 10), 0);
+      evaluation.totalMarks = finalMarks.reduce((sum: number, m: any) => sum + (m.marks || m.score || 0), 0);
+      evaluation.percentage = evaluation.maxTotalMarks > 0
+        ? Math.round((evaluation.totalMarks / evaluation.maxTotalMarks) * 100) : 0;
     }
   } else {
     console.log(`[Sync Results] Call ${callId} - No VAPI evaluation, using local evaluation`);
@@ -225,8 +248,6 @@ async function processCall(call: any): Promise<{
   let marksBreakdownJson = "";
   if (evaluation.marks?.length > 0) {
     marksBreakdownJson = JSON.stringify(evaluation.marks);
-  } else if (vapiProvidedEval && evaluation.vapiRawEvaluation) {
-    marksBreakdownJson = JSON.stringify(evaluation.vapiRawEvaluation);
   }
 
   const sheetRow: VivaSheetRow = {
@@ -256,9 +277,7 @@ async function processCall(call: any): Promise<{
     evaluationObj = {};
   }
 
-  const marksBreakdownForDb = evaluation.marks?.length > 0
-    ? evaluation.marks
-    : (vapiProvidedEval && evaluation.vapiRawEvaluation ? evaluation.vapiRawEvaluation : []);
+  const marksBreakdownForDb = evaluation.marks?.length > 0 ? evaluation.marks : [];
 
   const adminDbResult = await saveToAdminDb({
     timestamp: sheetRow.timestamp,
