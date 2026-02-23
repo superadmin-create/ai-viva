@@ -71,15 +71,6 @@ export async function saveToAdminDb(data: VivaResultRow): Promise<{ success: boo
   try {
     const db = getPool();
 
-    const existing = await db.query(
-      "SELECT id FROM viva_results WHERE vapi_call_id = $1",
-      [data.vapi_call_id]
-    );
-
-    if (existing.rows.length > 0) {
-      return { success: true, error: "Record already exists in admin database" };
-    }
-
     const studentEmail = normalizeEmail(data.student_email);
     const evaluationJson = normalizeEvaluation(data.evaluation);
     const marksBreakdownJson = normalizeMarksBreakdown(data.marks_breakdown);
@@ -87,7 +78,20 @@ export async function saveToAdminDb(data: VivaResultRow): Promise<{ success: boo
     await db.query(
       `INSERT INTO viva_results 
         (timestamp, student_name, student_email, subject, topics, questions_answered, score, overall_feedback, transcript, recording_url, evaluation, vapi_call_id, teacher_email, marks_breakdown, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW())`,
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW())
+       ON CONFLICT (vapi_call_id) DO UPDATE SET
+        student_name = EXCLUDED.student_name,
+        student_email = EXCLUDED.student_email,
+        subject = EXCLUDED.subject,
+        topics = EXCLUDED.topics,
+        questions_answered = EXCLUDED.questions_answered,
+        score = EXCLUDED.score,
+        overall_feedback = EXCLUDED.overall_feedback,
+        transcript = EXCLUDED.transcript,
+        recording_url = EXCLUDED.recording_url,
+        evaluation = EXCLUDED.evaluation,
+        teacher_email = EXCLUDED.teacher_email,
+        marks_breakdown = EXCLUDED.marks_breakdown`,
       [
         data.timestamp,
         data.student_name,
