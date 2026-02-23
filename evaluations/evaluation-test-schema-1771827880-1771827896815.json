@@ -1,0 +1,20 @@
+{
+  "marks": [],
+  "feedback": [],
+  "totalMarks": 60,
+  "maxTotalMarks": 0,
+  "percentage": 0,
+  "overallFeedback": "Test",
+  "vapiRawEvaluation": {
+    "depth": 50,
+    "clarity": 70,
+    "knowledge": 60,
+    "score": 60,
+    "strengths": [
+      "Good"
+    ],
+    "improvements": [
+      "More detail"
+    ]
+  }
+}

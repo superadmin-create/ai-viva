@@ -35,6 +35,37 @@ export interface VivaResultRow {
   marks_breakdown: any;
 }
 
+function normalizeEmail(email: string | null | undefined): string {
+  const trimmed = (email || "").trim().toLowerCase();
+  return trimmed.length > 0 ? trimmed : "unknown@example.com";
+}
+
+function normalizeEvaluation(evaluation: any): string {
+  if (!evaluation) return JSON.stringify({});
+  if (typeof evaluation === "string") {
+    try {
+      JSON.parse(evaluation);
+      return evaluation;
+    } catch {
+      return JSON.stringify({});
+    }
+  }
+  return JSON.stringify(evaluation);
+}
+
+function normalizeMarksBreakdown(marks: any): string {
+  if (!marks) return JSON.stringify([]);
+  if (typeof marks === "string") {
+    try {
+      JSON.parse(marks);
+      return marks;
+    } catch {
+      return JSON.stringify([]);
+    }
+  }
+  return JSON.stringify(marks);
+}
+
 export async function saveToAdminDb(data: VivaResultRow): Promise<{ success: boolean; error?: string }> {
   try {
     const db = getPool();
@@ -48,6 +79,10 @@ export async function saveToAdminDb(data: VivaResultRow): Promise<{ success: boo
       return { success: true, error: "Record already exists in admin database" };
     }
 
+    const studentEmail = normalizeEmail(data.student_email);
+    const evaluationJson = normalizeEvaluation(data.evaluation);
+    const marksBreakdownJson = normalizeMarksBreakdown(data.marks_breakdown);
+
     await db.query(
       `INSERT INTO viva_results 
         (timestamp, student_name, student_email, subject, topics, questions_answered, score, overall_feedback, transcript, recording_url, evaluation, vapi_call_id, teacher_email, marks_breakdown, created_at)
@@ -55,7 +90,7 @@ export async function saveToAdminDb(data: VivaResultRow): Promise<{ success: boo
       [
         data.timestamp,
         data.student_name,
-        data.student_email,
+        studentEmail,
         data.subject,
         data.topics,
         data.questions_answered,
@@ -63,10 +98,10 @@ export async function saveToAdminDb(data: VivaResultRow): Promise<{ success: boo
         data.overall_feedback,
         data.transcript,
         data.recording_url,
-        JSON.stringify(data.evaluation),
+        evaluationJson,
         data.vapi_call_id,
         data.teacher_email,
-        JSON.stringify(data.marks_breakdown),
+        marksBreakdownJson,
       ]
     );
 
