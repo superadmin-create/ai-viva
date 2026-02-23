@@ -373,9 +373,10 @@ export async function POST(request: Request) {
             answer: qa.answer,
             marks: avgMarksPerQ,
             maxMarks: maxMarksPerQ,
+            feedback: generateQuestionFeedback(qa.answer, avgMarksPerQ),
           }));
 
-          console.log(`[Viva Complete] Built per-question marks from transcript: ${finalMarks.length} questions, ${avgMarksPerQ}/${maxMarksPerQ} each`);
+          console.log(`[Viva Complete] Built per-question marks with feedback from transcript: ${finalMarks.length} questions, ${avgMarksPerQ}/${maxMarksPerQ} each`);
         }
       }
 
@@ -393,6 +394,12 @@ export async function POST(request: Request) {
         overallFeedback: computedOverallFeedback,
         vapiRawEvaluation: vapiStructuredData,
       };
+
+      for (const item of finalMarks) {
+        if (!item.feedback) {
+          item.feedback = generateQuestionFeedback(item.answer, item.marks);
+        }
+      }
 
       if (finalMarks.length > 0) {
         evaluation.maxTotalMarks = finalMarks.reduce((sum: number, m: any) => sum + (m.maxMarks || m.max_marks || 10), 0);
