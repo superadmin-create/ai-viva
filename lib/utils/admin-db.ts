@@ -58,13 +58,18 @@ function normalizeMarksBreakdown(marks: any): string {
   if (!marks) return JSON.stringify([]);
   if (typeof marks === "string") {
     try {
-      JSON.parse(marks);
-      return marks;
+      const parsed = JSON.parse(marks);
+      if (Array.isArray(parsed)) return marks;
+      return JSON.stringify([]);
     } catch {
       return JSON.stringify([]);
     }
   }
-  return JSON.stringify(marks);
+  if (Array.isArray(marks)) return JSON.stringify(marks);
+  if (typeof marks === "object" && !Array.isArray(marks)) {
+    return JSON.stringify([]);
+  }
+  return JSON.stringify([]);
 }
 
 export async function saveToAdminDb(data: VivaResultRow): Promise<{ success: boolean; error?: string }> {
@@ -73,7 +78,11 @@ export async function saveToAdminDb(data: VivaResultRow): Promise<{ success: boo
 
     const studentEmail = normalizeEmail(data.student_email);
     const evaluationJson = normalizeEvaluation(data.evaluation);
-    const marksBreakdownJson = normalizeMarksBreakdown(data.marks_breakdown);
+    let marksBreakdownJson = normalizeMarksBreakdown(data.marks_breakdown);
+
+    if (!marksBreakdownJson || marksBreakdownJson === 'null' || marksBreakdownJson === 'undefined') {
+      marksBreakdownJson = JSON.stringify([]);
+    }
 
     await db.query(
       `INSERT INTO viva_results 

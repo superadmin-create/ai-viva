@@ -627,6 +627,8 @@ export async function POST(request: Request) {
         }
       }
 
+      console.log(`[Viva Complete] Final marks_breakdown length: ${marksBreakdownForDb.length}, type: ${typeof marksBreakdownForDb}, isArray: ${Array.isArray(marksBreakdownForDb)}`);
+
       const adminDbResult = await saveToAdminDb({
         timestamp,
         student_name: studentName,
