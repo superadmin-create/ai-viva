@@ -424,14 +424,16 @@ export const VapiSession = forwardRef<VapiSessionHandle, VapiSessionProps>(
           // Ensure assistantId is a clean string
           const cleanAssistantId = String(assistantId).trim();
 
-          // Start the call with variableValues and metadata
-          // Note: VAPI web SDK doesn't support customer object in assistantOverrides
-          // Email will be passed through metadata and variableValues
+          const productionUrl = process.env.NEXT_PUBLIC_APP_URL || "https://ai-viva--leapupindia.repl.app";
+          const webhookUrl = `${productionUrl}/api/viva-complete`;
+          console.log("[VapiSession] Webhook URL:", webhookUrl);
+
           await vapi.start(cleanAssistantId, { 
             variableValues,
             firstMessage: firstMessageWithQuestions,
             metadata,
-          });
+            server: { url: webhookUrl, timeoutSeconds: 40 },
+          } as any);
           console.log("[VapiSession] Call start initiated with metadata email:", metadata.studentEmail);
 
         } catch (err) {
