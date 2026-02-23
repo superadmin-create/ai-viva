@@ -326,15 +326,12 @@ export const VapiSession = forwardRef<VapiSessionHandle, VapiSessionProps>(
             ? topicsRef.current.join(", ")
             : String(topicsRef.current || "");
 
-          // Fetch teacher-defined questions from Google Sheets
           let customQuestions = "";
           try {
-            // Build query params - include topic if specified
             const queryParams = new URLSearchParams({
               subject: subjectRef.current || "General",
             });
             
-            // Add topic filter if topics array has a value
             const selectedTopic = Array.isArray(topicsRef.current) && topicsRef.current.length > 0 
               ? topicsRef.current[0] 
               : null;
@@ -343,21 +340,27 @@ export const VapiSession = forwardRef<VapiSessionHandle, VapiSessionProps>(
               console.log(`[VapiSession] Filtering questions by topic: ${selectedTopic}`);
             }
             
+            console.log(`[VapiSession] Fetching questions from admin DB: /api/get-questions?${queryParams.toString()}`);
             const questionsResponse = await fetch(
               `/api/get-questions?${queryParams.toString()}`
             );
+            
+            if (!questionsResponse.ok) {
+              console.error(`[VapiSession] Questions API returned ${questionsResponse.status}: ${questionsResponse.statusText}`);
+              throw new Error(`Questions API error: ${questionsResponse.status}`);
+            }
+            
             const questionsData = await questionsResponse.json();
+            console.log(`[VapiSession] Questions API response: success=${questionsData.success}, count=${questionsData.count}, source=${questionsData.source}`);
             
             if (questionsData.success && questionsData.questions?.length > 0) {
               let questions = questionsData.questions;
-              console.log(`[VapiSession] ✓ Found ${questions.length} custom questions${selectedTopic ? ` for topic: ${selectedTopic}` : ""}`);
+              console.log(`[VapiSession] Found ${questions.length} questions from admin panel${selectedTopic ? ` for topic: ${selectedTopic}` : ""}`);
               
               if (questionCountRef.current && questions.length > questionCountRef.current) {
-                console.log(`[VapiSession] Slicing questions from ${questions.length} to ${questionCountRef.current}`);
+                console.log(`[VapiSession] Limiting questions from ${questions.length} to ${questionCountRef.current}`);
                 questions = questions.slice(0, questionCountRef.current);
               }
-              
-              console.log(`[VapiSession] Questions from API:`, questions.map((q: any) => q.question));
               
               const actualCount = questions.length;
               customQuestions = questions
@@ -368,18 +371,14 @@ export const VapiSession = forwardRef<VapiSessionHandle, VapiSessionProps>(
               
               customQuestions = `You must ask EXACTLY ${actualCount} questions. No more, no less. Ask these questions in order:\n\n${customQuestions}\n\nIMPORTANT: Ask these questions ONE AT A TIME. Wait for the student's complete answer before asking the next question.`;
               
-              console.log(`[VapiSession] Formatted questions length: ${customQuestions.length} characters`);
-              console.log(`[VapiSession] Questions preview:`, customQuestions.substring(0, 300) + "...");
+              console.log(`[VapiSession] Successfully loaded ${actualCount} admin panel questions (${customQuestions.length} chars)`);
             } else {
-              console.warn("[VapiSession] ⚠ No custom questions found, AI will generate its own");
-              console.warn("[VapiSession] API response:", JSON.stringify(questionsData, null, 2));
-              console.warn("[VapiSession] To use custom questions:");
-              console.warn("  1. Add questions in the Admin Panel");
-              console.warn("  2. Ensure subject name matches exactly");
-              console.warn("  3. Set questions to Active");
+              console.warn(`[VapiSession] WARNING: No questions found in admin panel for subject "${subjectRef.current}". VAPI will generate generic questions.`);
+              console.warn(`[VapiSession] Ensure questions are added in the Admin Panel for this subject and set to Active.`);
             }
           } catch (err) {
-            console.log("[VapiSession] Could not fetch custom questions:", err);
+            console.error("[VapiSession] FAILED to fetch questions from admin panel:", err);
+            console.error("[VapiSession] VAPI will fall back to generating generic questions.");
           }
 
           // Metadata is passed through to webhooks (end-of-call-report)
