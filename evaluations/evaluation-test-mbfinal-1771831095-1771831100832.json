@@ -1,0 +1,56 @@
+{
+  "marks": [
+    {
+      "questionNumber": 1,
+      "question": "What is technical analysis, and how does it diff from fundamental analysis in evaluating stock performance?",
+      "answer": "Technical analysis is basically evaluating the previous chart price moment and expecting the future stock moment. However, fundamental analysis is understanding the financial data of a company which includes balance sheet, profit and loss statement, and also evaluating the cash flow statement of the company. Thank you.",
+      "marks": 6,
+      "maxMarks": 10
+    },
+    {
+      "questionNumber": 2,
+      "question": "Thank you, Josh. Lets move to the next question. How would you use moving averages to identify potential buy or sell signals in a stocks price chart?",
+      "answer": "I dont know the answ for this.",
+      "marks": 6,
+      "maxMarks": 10
+    },
+    {
+      "questionNumber": 3,
+      "question": "Thats okay. Lets move to the next question. Imagine a stock has been consistently declining. What technical indicators would you analyze to determine if it might reverse its trend?",
+      "answer": "I will use RSI if it goes below thirty and then it gives a reversal. That is an indication to buy a down trending stock. I can also use MACD crossov to buy a stock.",
+      "marks": 6,
+      "maxMarks": 10
+    },
+    {
+      "questionNumber": 4,
+      "question": "Thank you, Josh. Now for the next question. Compare and contrast the effectiveness of chart patterns versus indicators in technical analysis. Which do you believe is more reliable and why?",
+      "answer": "I believe chart patterns are much more believable since they are maybe tried and tested, and it has been seen in multiple previous cases as well, which is why it is widely used for trading for technical analysis.",
+      "marks": 6,
+      "maxMarks": 10
+    },
+    {
+      "questionNumber": 5,
+      "question": "Alright. Thank you. Now for the final question. In a real world scenario where a company announces unexpected bad news, how would technical analysis help you assess the impact on its stock price?",
+      "answer": "Technical analysis usually does not help in such fundamental triggers.",
+      "marks": 6,
+      "maxMarks": 10
+    }
+  ],
+  "feedback": [],
+  "totalMarks": 30,
+  "maxTotalMarks": 50,
+  "percentage": 60,
+  "overallFeedback": "Good understanding",
+  "vapiRawEvaluation": {
+    "depth": 55,
+    "clarity": 50,
+    "knowledge": 60,
+    "score": 55,
+    "strengths": [
+      "Good understanding of technical analysis basics"
+    ],
+    "improvements": [
+      "Need more depth on chart patterns"
+    ]
+  }
+}

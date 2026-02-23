@@ -289,7 +289,24 @@ async function processCall(call: any): Promise<{
     }
   }
 
-  const marksBreakdownForDb = evaluation.marks?.length > 0 ? evaluation.marks : [];
+  let marksBreakdownForDb = evaluation.marks?.length > 0 ? evaluation.marks : [];
+
+  if (marksBreakdownForDb.length === 0 && transcript && transcript.length > 30) {
+    console.log(`[Sync Results] marks_breakdown empty for ${callId}, building from transcript`);
+    const fallbackParsed = parseTranscript(transcript);
+    if (fallbackParsed.questions.length > 0) {
+      const fallbackScore = evaluation.totalMarks || cleanEvaluation.depth || 0;
+      const perQ = Math.min(Math.round((fallbackScore / 100) * 10), 10);
+      marksBreakdownForDb = fallbackParsed.questions.map((qa: any, idx: number) => ({
+        questionNumber: idx + 1,
+        question: qa.question,
+        answer: qa.answer,
+        marks: perQ,
+        maxMarks: 10,
+      }));
+      console.log(`[Sync Results] Built ${marksBreakdownForDb.length} per-question marks (${perQ}/10 each)`);
+    }
+  }
 
   const adminDbResult = await saveToAdminDb({
     timestamp: sheetRow.timestamp,
@@ -297,7 +314,7 @@ async function processCall(call: any): Promise<{
     student_email: studentEmail || "unknown@example.com",
     subject,
     topics,
-    questions_answered: evaluation.marks?.length || 0,
+    questions_answered: marksBreakdownForDb.length || evaluation.marks?.length || 0,
     score: evaluation.totalMarks || 0,
     overall_feedback: evaluation.overallFeedback || "",
     transcript: sheetRow.transcript,

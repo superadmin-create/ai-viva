@@ -608,7 +608,24 @@ export async function POST(request: Request) {
         }
       }
 
-      const marksBreakdownForDb = evaluation.marks?.length > 0 ? evaluation.marks : [];
+      let marksBreakdownForDb = evaluation.marks?.length > 0 ? evaluation.marks : [];
+
+      if (marksBreakdownForDb.length === 0 && transcript && transcript.length > 30) {
+        console.log("[Viva Complete] marks_breakdown empty, building from transcript as safety net");
+        const fallbackParsed = parseTranscript(transcript);
+        if (fallbackParsed.questions.length > 0) {
+          const fallbackScore = evaluation.totalMarks || cleanEvaluation.depth || 0;
+          const perQ = Math.min(Math.round((fallbackScore / 100) * 10), 10);
+          marksBreakdownForDb = fallbackParsed.questions.map((qa: any, idx: number) => ({
+            questionNumber: idx + 1,
+            question: qa.question,
+            answer: qa.answer,
+            marks: perQ,
+            maxMarks: 10,
+          }));
+          console.log(`[Viva Complete] Built ${marksBreakdownForDb.length} per-question marks from transcript (${perQ}/10 each)`);
+        }
+      }
 
       const adminDbResult = await saveToAdminDb({
         timestamp,
@@ -616,7 +633,7 @@ export async function POST(request: Request) {
         student_email: studentEmail || "unknown@example.com",
         subject,
         topics,
-        questions_answered: evaluation.marks?.length || 0,
+        questions_answered: marksBreakdownForDb.length || evaluation.marks?.length || 0,
         score: evaluation.totalMarks || 0,
         overall_feedback: evaluation.overallFeedback || "",
         transcript: transcript.substring(0, 50000),

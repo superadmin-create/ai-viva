@@ -1,0 +1,37 @@
+[
+  {
+    "marks": 8,
+    "answer": "Technical analysis is basically evaluating the previous chart price moment and expecting the future stock moment. However, fundamental analysis is understanding the financial data of a company which includes balance sheet, profit and loss statement, and also evaluating the cash flow statement of the company. Thank you.",
+    "maxMarks": 10,
+    "question": "What is technical analysis, and how does it diff from fundamental analysis in evaluating stock performance?",
+    "questionNumber": 1
+  },
+  {
+    "marks": 4,
+    "answer": "I don't know the answ for this.",
+    "maxMarks": 10,
+    "question": "Thank you, Josh. Let's move to the next question. How would you use moving averages to identify potential buy or sell signals in a stock's price chart?",
+    "questionNumber": 2
+  },
+  {
+    "marks": 6,
+    "answer": "I will use RSI if it goes below thirty and then it gives a reversal. That is an indication to buy a down trending stock. I can also use MACD crossov to buy a stock.",
+    "maxMarks": 10,
+    "question": "That's okay. Let's move to the next question. Imagine a stock has been consistently declining. What technical indicators would you analyze to determine if it might reverse its trend?",
+    "questionNumber": 3
+  },
+  {
+    "marks": 4,
+    "answer": "I believe chart pattern are much more believable since they are maybe tried and tested, and it has been seen in multiple previous cases as well, which is why it is widely used for trading for technical analysis.",
+    "maxMarks": 10,
+    "question": "Thank you, Josh. Now for the next question. Compare and contrast the effectiveness of chart patterns versus indicators in technical analysis. Which do you believe is more reliable and why?",
+    "questionNumber": 4
+  },
+  {
+    "marks": 4,
+    "answer": "Technical analysis usually does not help in such fundamental triggers.",
+    "maxMarks": 10,
+    "question": "Alright. Thank you. Now for the final question. In a real world scenario where a company announces unexpected bad news, how would technical analysis help you assess the impact on its stock price?",
+    "questionNumber": 5
+  }
+]
