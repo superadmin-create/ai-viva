@@ -1,0 +1,37 @@
+{
+  "marks": [
+    {
+      "questionNumber": 1,
+      "question": "What is machine learning?",
+      "answer": "ML is learning from data.",
+      "marks": 5,
+      "maxMarks": 10
+    },
+    {
+      "questionNumber": 2,
+      "question": "What is overfitting?",
+      "answer": "I am not sure about that.",
+      "marks": 5,
+      "maxMarks": 10
+    }
+  ],
+  "feedback": [],
+  "totalMarks": 10,
+  "maxTotalMarks": 20,
+  "percentage": 50,
+  "overallFeedback": "Good",
+  "vapiRawEvaluation": {
+    "depth": 45,
+    "clarity": 40,
+    "knowledge": 50,
+    "score": 45,
+    "strengths": [
+      "Basic understanding of supervised and unsupervised learning",
+      "Willingness to answer all questions"
+    ],
+    "improvements": [
+      "Improve clarity and coherence in explanations",
+      "Expand knowledge on key concepts like overfitting and confusion matrix"
+    ]
+  }
+}

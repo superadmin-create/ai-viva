@@ -589,11 +589,23 @@ export async function POST(request: Request) {
 
     let adminDbSaved = false;
     try {
-      let evaluationObj;
-      try {
-        evaluationObj = typeof evaluationJson === "string" ? JSON.parse(evaluationJson) : evaluation;
-      } catch {
-        evaluationObj = evaluation;
+      const cleanEvaluation: any = {};
+      if (vapiProvidedEvaluation) {
+        cleanEvaluation.depth = vapiStructuredData.depth ?? evaluation.vapiRawEvaluation?.depth ?? 0;
+        cleanEvaluation.clarity = vapiStructuredData.clarity ?? evaluation.vapiRawEvaluation?.clarity ?? 0;
+        cleanEvaluation.knowledge = vapiStructuredData.knowledge ?? evaluation.vapiRawEvaluation?.knowledge ?? 0;
+        cleanEvaluation.strengths = vapiStructuredData.strengths || evaluation.vapiRawEvaluation?.strengths || [];
+        cleanEvaluation.improvements = vapiStructuredData.improvements || evaluation.vapiRawEvaluation?.improvements || [];
+      } else {
+        const pct = evaluation.percentage || 0;
+        cleanEvaluation.depth = pct;
+        cleanEvaluation.clarity = pct;
+        cleanEvaluation.knowledge = pct;
+        cleanEvaluation.strengths = [];
+        cleanEvaluation.improvements = [];
+        if (evaluation.overallFeedback) {
+          cleanEvaluation.improvements.push(evaluation.overallFeedback);
+        }
       }
 
       const marksBreakdownForDb = evaluation.marks?.length > 0 ? evaluation.marks : [];
@@ -609,7 +621,7 @@ export async function POST(request: Request) {
         overall_feedback: evaluation.overallFeedback || "",
         transcript: transcript.substring(0, 50000),
         recording_url: recordingUrl,
-        evaluation: evaluationObj,
+        evaluation: cleanEvaluation,
         vapi_call_id: callId,
         teacher_email: teacherEmail,
         marks_breakdown: marksBreakdownForDb,

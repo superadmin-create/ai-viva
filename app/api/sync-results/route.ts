@@ -270,11 +270,23 @@ async function processCall(call: any): Promise<{
 
   const sheetsResult = await saveToSheets(sheetRow);
 
-  let evaluationObj;
-  try {
-    evaluationObj = typeof sheetRow.evaluation === "string" ? JSON.parse(sheetRow.evaluation) : sheetRow.evaluation;
-  } catch {
-    evaluationObj = {};
+  const cleanEvaluation: any = {};
+  if (vapiProvidedEval) {
+    cleanEvaluation.depth = vapiStructuredData.depth ?? evaluation.vapiRawEvaluation?.depth ?? 0;
+    cleanEvaluation.clarity = vapiStructuredData.clarity ?? evaluation.vapiRawEvaluation?.clarity ?? 0;
+    cleanEvaluation.knowledge = vapiStructuredData.knowledge ?? evaluation.vapiRawEvaluation?.knowledge ?? 0;
+    cleanEvaluation.strengths = vapiStructuredData.strengths || evaluation.vapiRawEvaluation?.strengths || [];
+    cleanEvaluation.improvements = vapiStructuredData.improvements || evaluation.vapiRawEvaluation?.improvements || [];
+  } else {
+    const pct = evaluation.percentage || 0;
+    cleanEvaluation.depth = pct;
+    cleanEvaluation.clarity = pct;
+    cleanEvaluation.knowledge = pct;
+    cleanEvaluation.strengths = [];
+    cleanEvaluation.improvements = [];
+    if (evaluation.overallFeedback) {
+      cleanEvaluation.improvements.push(evaluation.overallFeedback);
+    }
   }
 
   const marksBreakdownForDb = evaluation.marks?.length > 0 ? evaluation.marks : [];
@@ -290,7 +302,7 @@ async function processCall(call: any): Promise<{
     overall_feedback: evaluation.overallFeedback || "",
     transcript: sheetRow.transcript,
     recording_url: sheetRow.recordingUrl || "",
-    evaluation: evaluationObj,
+    evaluation: cleanEvaluation,
     vapi_call_id: callId,
     teacher_email: teacherEmail,
     marks_breakdown: marksBreakdownForDb,
